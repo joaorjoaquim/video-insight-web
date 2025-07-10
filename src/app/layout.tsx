@@ -1,28 +1,24 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
+import { GlobalProvider } from "../core/providers/GlobalProvider";
 import { AuthDialog } from '../components/AuthDialog';
-import { GlobalProvider } from "@/core/providers/GlobalProvider";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "VideoInsight - Transform Your Videos Into Insights",
-  description: "Upload your videos and get instant AI-powered analysis, summaries, and actionable insights to enhance your content strategy.",
+  title: "SummaryVideos - Transform Your Videos Into Insights",
+  description: "Upload your videos and get AI-powered insights, summaries, and analytics to enhance your content creation.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={inter.className}>
         <GlobalProvider>
           {children}
           <AuthDialog />

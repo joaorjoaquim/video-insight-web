@@ -59,7 +59,12 @@ function DashboardContent() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900">VideoInsight Dashboard</h1>
+              <img 
+                src="/summary_videos_logo.png" 
+                alt="SummaryVideos Logo" 
+                className="h-8 w-auto mr-3"
+              />
+              <h1 className="text-2xl font-bold text-gray-900">SummaryVideos Dashboard</h1>
             </div>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-3">

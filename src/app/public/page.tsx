@@ -2,80 +2,94 @@
 import React from 'react';
 import { useAppDispatch } from '../../core/hooks';
 import { openAuthDialog } from '../../core/slices/dialogSlice';
-import { AuthDialog } from '../../components/AuthDialog';
 
-export default function LandingPage() {
+export default function PublicPage() {
   const dispatch = useAppDispatch();
 
   const handleGetStarted = () => {
-    dispatch(openAuthDialog('signup'));
+    dispatch(openAuthDialog('login'));
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
-      <AuthDialog />
-      
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-900">
       {/* Navigation */}
-      <nav className="relative z-10 px-6 py-4">
+      <nav className="px-6 py-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="text-white text-2xl font-bold">VideoInsight</div>
-          <button
-            onClick={() => dispatch(openAuthDialog('login'))}
-            className="text-white hover:text-indigo-200 transition-colors"
-          >
-            Sign In
-          </button>
+          <div className="flex items-center space-x-3">
+            <img 
+              src="/summary_videos_logo.png" 
+              alt="SummaryVideos Logo" 
+              className="h-8 w-auto"
+            />
+            <div className="text-white text-2xl font-bold">SummaryVideos</div>
+          </div>
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={handleGetStarted}
+              className="bg-white text-indigo-900 px-4 py-2 rounded-md hover:bg-indigo-100 transition-colors font-medium"
+            >
+              Get Started
+            </button>
+          </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <div className="relative z-10 px-6 py-20">
+      <div className="px-6 py-20">
         <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6">
-            Transform Your Videos
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-pink-400">
-              Into Insights
+          <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
+            Transform Your Videos Into
+            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
+              Powerful Insights
             </span>
           </h1>
-          
-          <p className="text-xl md:text-2xl text-indigo-200 mb-8 max-w-3xl mx-auto">
-            Upload your videos and get instant AI-powered analysis, summaries, and actionable insights to enhance your content strategy.
+          <p className="text-xl text-indigo-200 mb-8 max-w-3xl mx-auto">
+            Upload your videos and get AI-powered analysis, summaries, and actionable insights 
+            to enhance your content strategy and reach more viewers.
           </p>
-
-          <button
-            onClick={handleGetStarted}
-            className="bg-white text-indigo-900 px-8 py-4 rounded-full text-lg font-semibold hover:bg-indigo-50 transition-colors shadow-lg hover:shadow-xl"
-          >
-            Get Started Free
-          </button>
+          <div className="flex justify-center">
+            <button
+              onClick={handleGetStarted}
+              className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105"
+            >
+              Start Analyzing Videos
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Features Section */}
-      <div className="relative z-10 px-6 py-20">
+      <div className="px-6 py-20 bg-white/10 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-16">
+            Why Choose SummaryVideos?
+          </h2>
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-8 text-center">
-              <div className="text-4xl mb-4">🎯</div>
-              <h3 className="text-xl font-semibold text-white mb-4">Smart Analysis</h3>
+            <div className="text-center">
+              <div className="bg-gradient-to-r from-indigo-500 to-purple-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">🤖</span>
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-2">AI-Powered Analysis</h3>
               <p className="text-indigo-200">
-                Get detailed insights about your video content, audience engagement, and performance metrics.
+                Advanced AI algorithms analyze your content and provide detailed insights about viewer engagement, content quality, and optimization opportunities.
               </p>
             </div>
-            
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-8 text-center">
-              <div className="text-4xl mb-4">📊</div>
-              <h3 className="text-xl font-semibold text-white mb-4">AI Summaries</h3>
+            <div className="text-center">
+              <div className="bg-gradient-to-r from-indigo-500 to-purple-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">📊</span>
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-2">Detailed Analytics</h3>
               <p className="text-indigo-200">
-                Automatically generate concise summaries and key points from your video content.
+                Get comprehensive analytics including viewer retention, engagement metrics, and content performance insights to optimize your strategy.
               </p>
             </div>
-            
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-8 text-center">
-              <div className="text-4xl mb-4">🚀</div>
-              <h3 className="text-xl font-semibold text-white mb-4">Actionable Insights</h3>
+            <div className="text-center">
+              <div className="bg-gradient-to-r from-indigo-500 to-purple-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">⚡</span>
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-2">Lightning Fast</h3>
               <p className="text-indigo-200">
-                Receive recommendations to improve your content and boost engagement.
+                Process videos quickly with our optimized infrastructure. Get results in minutes, not hours.
               </p>
             </div>
           </div>
@@ -83,27 +97,35 @@ export default function LandingPage() {
       </div>
 
       {/* CTA Section */}
-      <div className="relative z-10 px-6 py-20">
+      <div className="px-6 py-20">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            Ready to Transform Your Videos?
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+            Ready to Transform Your Content?
           </h2>
           <p className="text-xl text-indigo-200 mb-8">
-            Join thousands of creators who are already using VideoInsight to enhance their content.
+            Join thousands of creators who are already using SummaryVideos to enhance their content.
           </p>
           <button
             onClick={handleGetStarted}
-            className="bg-gradient-to-r from-indigo-500 to-pink-500 text-white px-8 py-4 rounded-full text-lg font-semibold hover:from-indigo-600 hover:to-pink-600 transition-all shadow-lg hover:shadow-xl"
+            className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105"
           >
-            Start Your Free Trial
+            Get Started Free
           </button>
         </div>
       </div>
 
       {/* Footer */}
-      <footer className="relative z-10 px-6 py-8 border-t border-white/20">
-        <div className="max-w-7xl mx-auto text-center text-indigo-200">
-          <p>&copy; 2024 VideoInsight. All rights reserved.</p>
+      <footer className="px-6 py-8 border-t border-white/20">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
+          <div className="flex items-center space-x-3 mb-4 md:mb-0">
+            <img 
+              src="/summary_videos_logo.png" 
+              alt="SummaryVideos Logo" 
+              className="h-6 w-auto"
+            />
+            <span className="text-white font-semibold">SummaryVideos</span>
+          </div>
+          <p className="text-indigo-200">&copy; 2024 SummaryVideos. All rights reserved.</p>
         </div>
       </footer>
     </div>

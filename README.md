@@ -1,4 +1,4 @@
-# VideoInsight Web
+# SummaryVideos Web
 
 A modern Next.js application for video analysis and insights.
 
@@ -53,7 +53,7 @@ src/
 
 ## API Integration
 
-The application integrates with the VideoInsight API:
+The application integrates with the SummaryVideos API:
 
 - **Authentication**: `/auth/signup`, `/auth/login`, `/auth/oauth/:provider`
 - **User Profile**: `/user/profile`
