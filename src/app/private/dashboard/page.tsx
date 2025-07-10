@@ -1,12 +1,12 @@
 'use client';
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAppSelector } from '../../../core/hooks';
 import { logout, setOAuthSession, fetchProfile } from '../../../core/slices/authSlice';
 import { useAppDispatch } from '../../../core/hooks';
 import * as authApi from '../../../lib/api/authApi';
 
-export default function DashboardPage() {
+function DashboardContent() {
   const dispatch = useAppDispatch();
   const { user, isAuthenticated } = useAppSelector((state: any) => state.auth);
   const searchParams = useSearchParams();
@@ -205,5 +205,23 @@ export default function DashboardPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <h1 className="text-xl font-semibold text-gray-900 mb-2">
+            Loading...
+          </h1>
+          <p className="text-gray-600">Please wait.</p>
+        </div>
+      </div>
+    }>
+      <DashboardContent />
+    </Suspense>
   );
 } 
