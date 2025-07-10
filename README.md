@@ -1,36 +1,96 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# VideoInsight Web
 
-## Getting Started
+A modern Next.js application for video analysis and insights.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Authentication**: Email/password and OAuth (Google, Discord) login
+- **Landing Page**: Beautiful public landing page with call-to-action
+- **Dashboard**: Private dashboard for authenticated users
+- **Redux Toolkit**: State management with authentication and dialog slices
+- **TypeScript**: Full type safety throughout the application
+- **Tailwind CSS**: Modern styling with utility classes
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── public/          # Public landing page
+│   ├── private/         # Protected dashboard pages
+│   ├── auth/            # OAuth callback handling
+│   └── layout.tsx       # Root layout with providers
+├── components/          # Reusable UI components
+├── core/
+│   ├── slices/          # Redux Toolkit slices
+│   ├── providers/       # Global providers
+│   ├── hooks.ts         # Typed Redux hooks
+│   └── store.ts         # Redux store configuration
+├── lib/
+│   ├── api/             # API client and functions
+│   └── utils/           # Utility functions
+├── types/               # TypeScript type definitions
+└── middleware.ts        # Next.js middleware for auth
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Install dependencies**:
+   ```bash
+   npm install
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. **Create environment file**:
+   Create `.env.local` with:
+   ```
+   NEXT_PUBLIC_API_BASE_URL=http://localhost:5000
+   ```
 
-## Learn More
+3. **Start the development server**:
+   ```bash
+   npm run dev
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+## API Integration
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The application integrates with the VideoInsight API:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Authentication**: `/auth/signup`, `/auth/login`, `/auth/oauth/:provider`
+- **User Profile**: `/user/profile`
+- **OAuth**: Google and Discord integration
 
-## Deploy on Vercel
+## Authentication Flow
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **Public Access**: Users can visit the landing page without authentication
+2. **Sign Up/Login**: Users can create accounts or sign in via email/password or OAuth
+3. **Protected Routes**: `/private/*` routes require authentication
+4. **Session Management**: JWT tokens stored in localStorage and cookies
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Development
+
+- **Redux DevTools**: Available in development mode
+- **TypeScript**: Strict type checking enabled
+- **ESLint**: Code quality and consistency
+- **Tailwind**: Utility-first CSS framework
+
+## Deployment
+
+The application is ready for deployment on Vercel, Netlify, or any Next.js-compatible platform.
+
+## API Endpoints
+
+### Authentication
+- `POST /auth/signup` - User registration
+- `POST /auth/login` - User login
+- `GET /auth/oauth/:provider` - OAuth redirect
+- `GET /auth/callback/:provider` - OAuth callback
+
+### User Management
+- `GET /user/profile` - Get authenticated user profile
+
+## OAuth Providers
+
+- **Google**: OAuth 2.0 integration
+- **Discord**: OAuth 2.0 integration
+
+Both providers redirect back to the frontend callback handler which stores the JWT token and redirects to the dashboard.

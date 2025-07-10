@@ -1,0 +1,209 @@
+'use client';
+import React, { useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useAppSelector } from '../../../core/hooks';
+import { logout, setOAuthSession, fetchProfile } from '../../../core/slices/authSlice';
+import { useAppDispatch } from '../../../core/hooks';
+import * as authApi from '../../../lib/api/authApi';
+
+export default function DashboardPage() {
+  const dispatch = useAppDispatch();
+  const { user, isAuthenticated } = useAppSelector((state: any) => state.auth);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  useEffect(() => {
+    const handleTokenFromUrl = async () => {
+      const urlToken = searchParams.get('token');
+      
+      if (urlToken && !isAuthenticated) {
+        try {
+          // Store token
+          localStorage.setItem('auth_token', urlToken);
+          document.cookie = `auth_token=${urlToken}; path=/; max-age=${15 * 24 * 60 * 60}; samesite=lax`;
+          
+          // Fetch user profile
+          const user = await authApi.getProfile();
+          
+          // Set OAuth session
+          dispatch(setOAuthSession({ user, token: urlToken }));
+        } catch (error) {
+          console.error('Failed to authenticate with token:', error);
+        }
+      }
+    };
+
+    handleTokenFromUrl();
+  }, [searchParams, isAuthenticated, dispatch]);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    router.push('/');
+  };
+
+  if (!isAuthenticated || !user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
+          <p className="text-gray-600">Please sign in to access this page.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-6">
+            <div className="flex items-center">
+              <h1 className="text-2xl font-bold text-gray-900">VideoInsight Dashboard</h1>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3">
+                {user.avatarUrl && (
+                  <img
+                    src={user.avatarUrl}
+                    alt={user.name}
+                    className="w-8 h-8 rounded-full"
+                  />
+                )}
+                <div>
+                  <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                  <p className="text-xs text-gray-500">{user.email}</p>
+                </div>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div className="px-4 py-6 sm:px-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Welcome Card */}
+            <div className="bg-white overflow-hidden shadow rounded-lg">
+              <div className="p-5">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center">
+                      <span className="text-white font-semibold">
+                        {user.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="ml-5 w-0 flex-1">
+                    <dl>
+                      <dt className="text-sm font-medium text-gray-500 truncate">
+                        Welcome back
+                      </dt>
+                      <dd className="text-lg font-medium text-gray-900">
+                        {user.name}
+                      </dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Account Info */}
+            <div className="bg-white overflow-hidden shadow rounded-lg">
+              <div className="p-5">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                      <span className="text-white">📧</span>
+                    </div>
+                  </div>
+                  <div className="ml-5 w-0 flex-1">
+                    <dl>
+                      <dt className="text-sm font-medium text-gray-500 truncate">
+                        Email
+                      </dt>
+                      <dd className="text-sm font-medium text-gray-900">
+                        {user.email}
+                      </dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Account Type */}
+            <div className="bg-white overflow-hidden shadow rounded-lg">
+              <div className="p-5">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
+                      <span className="text-white">🔐</span>
+                    </div>
+                  </div>
+                  <div className="ml-5 w-0 flex-1">
+                    <dl>
+                      <dt className="text-sm font-medium text-gray-500 truncate">
+                        Account Type
+                      </dt>
+                      <dd className="text-sm font-medium text-gray-900">
+                        {user.provider ? `${user.provider} OAuth` : 'Email/Password'}
+                      </dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Video Upload Section */}
+          <div className="mt-8">
+            <div className="bg-white shadow rounded-lg">
+              <div className="px-4 py-5 sm:p-6">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                  Upload Your Video
+                </h3>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
+                  <div className="text-6xl mb-4">📹</div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Drop your video here
+                  </h3>
+                  <p className="text-gray-500 mb-4">
+                    or click to browse files
+                  </p>
+                  <button className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors">
+                    Choose File
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Videos */}
+          <div className="mt-8">
+            <div className="bg-white shadow rounded-lg">
+              <div className="px-4 py-5 sm:p-6">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                  Recent Videos
+                </h3>
+                <div className="text-center py-8">
+                  <div className="text-4xl mb-4">📊</div>
+                  <p className="text-gray-500">No videos uploaded yet</p>
+                  <p className="text-sm text-gray-400 mt-2">
+                    Upload your first video to get started with analysis
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+} 
