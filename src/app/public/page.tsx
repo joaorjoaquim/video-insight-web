@@ -2,6 +2,8 @@
 import React from 'react';
 import { useAppDispatch } from '../../core/hooks';
 import { openAuthDialog } from '../../core/slices/dialogSlice';
+import { HugeiconsIcon } from '@hugeicons/react'
+import { AiBrain03Icon, ChartLineData02Icon, ZapIcon } from '@hugeicons/core-free-icons';
 
 export default function PublicPage() {
   const dispatch = useAppDispatch();
@@ -13,7 +15,7 @@ export default function PublicPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-900">
       {/* Navigation */}
-      <nav className="px-6 py-4">
+      <nav className="px-3 md:px-6 py-4 bg-white">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-3">
             <img 
@@ -21,12 +23,12 @@ export default function PublicPage() {
               alt="SummaryVideos Logo" 
               className="h-8 w-auto"
             />
-            <div className="text-white text-2xl font-bold">SummaryVideos</div>
+            <div className="text-black text-2xl font-bold">SummaryVideos</div>
           </div>
           <div className="flex items-center space-x-4">
             <button
               onClick={handleGetStarted}
-              className="bg-white text-indigo-900 px-4 py-2 rounded-md hover:bg-indigo-100 transition-colors font-medium"
+              className="bg-white border border-indigo-900 text-indigo-900 px-4 py-2 rounded-md hover:bg-indigo-100 transition-colors font-medium"
             >
               Get Started
             </button>
@@ -35,15 +37,15 @@ export default function PublicPage() {
       </nav>
 
       {/* Hero Section */}
-      <div className="px-3 py-10 sm:px-6 sm:py-16 md:py-20">
+      <div className="px-3 py-10 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-3xl leading-tight sm:text-5xl md:text-6xl font-bold text-white mb-4 sm:mb-6">
+          <h1 className="text-3xl leading-tight sm:text-5xl md:text-6xl font-bold text-black mb-4 sm:mb-6">
             Transform Your Videos Into
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400 leading-[1.1] sm:leading-tight">
+            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[#F2A240] via-[#af65ab] to-[#7E1DFD] leading-[1.1] sm:leading-tight">
               Powerful Insights
             </span>
           </h1>
-          <p className="text-base sm:text-lg md:text-xl text-indigo-200 mb-6 sm:mb-8 max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-6 sm:mb-8 max-w-3xl mx-auto">
             Upload your videos and get AI-powered analysis, summaries, and actionable insights 
             to enhance your content strategy and reach more viewers.
           </p>
@@ -59,15 +61,15 @@ export default function PublicPage() {
       </div>
 
       {/* Features Section */}
-      <div className="px-6 py-20 bg-white/10 backdrop-blur-sm">
+      <div className="px-3 py-10 md:py-20 bg-white/10 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-16">
             Why Choose SummaryVideos?
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="bg-gradient-to-r from-indigo-500 to-purple-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">🤖</span>
+              <div className="bg-[#7E1DFD] w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <HugeiconsIcon icon={AiBrain03Icon} className="text-2xl text-white" />
               </div>
               <h3 className="text-xl font-semibold text-white mb-2">AI-Powered Analysis</h3>
               <p className="text-indigo-200">
@@ -75,8 +77,8 @@ export default function PublicPage() {
               </p>
             </div>
             <div className="text-center">
-              <div className="bg-gradient-to-r from-indigo-500 to-purple-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">📊</span>
+              <div className="bg-[#7E1DFD] w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <HugeiconsIcon icon={ChartLineData02Icon} className="text-2xl text-white" />
               </div>
               <h3 className="text-xl font-semibold text-white mb-2">Detailed Analytics</h3>
               <p className="text-indigo-200">
@@ -84,8 +86,8 @@ export default function PublicPage() {
               </p>
             </div>
             <div className="text-center">
-              <div className="bg-gradient-to-r from-indigo-500 to-purple-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">⚡</span>
+              <div className="bg-[#7E1DFD] w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <HugeiconsIcon icon={ZapIcon} className="text-2xl text-white" />
               </div>
               <h3 className="text-xl font-semibold text-white mb-2">Lightning Fast</h3>
               <p className="text-indigo-200">
@@ -115,7 +117,7 @@ export default function PublicPage() {
       </div>
 
       {/* Footer */}
-      <footer className="px-6 py-8 border-t border-white/20">
+      <footer className="px-3 md:px-6 py-8 border-t border-white/20">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center space-x-3 mb-4 md:mb-0">
             <img 
@@ -125,7 +127,7 @@ export default function PublicPage() {
             />
             <span className="text-white font-semibold">SummaryVideos</span>
           </div>
-          <p className="text-indigo-200">&copy; 2024 SummaryVideos. All rights reserved.</p>
+          <p className="text-indigo-200">&copy; 2025 SummaryVideos. All rights reserved.</p>
         </div>
       </footer>
     </div>
