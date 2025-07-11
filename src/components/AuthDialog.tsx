@@ -1,5 +1,6 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '../core/hooks';
 import { openAuthDialog, closeAuthDialog, switchAuthMode } from '../core/slices/dialogSlice';
 import { loginUser, signupUser, clearError } from '../core/slices/authSlice';
@@ -8,8 +9,9 @@ import { getOAuthUrl } from '../lib/api/authApi';
 
 export function AuthDialog() {
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const { isOpen, mode } = useAppSelector((state: any) => state.dialog);
-  const { isLoading, error } = useAppSelector((state: any) => state.auth);
+  const { isLoading, error, isAuthenticated } = useAppSelector((state: any) => state.auth);
 
   const [formData, setFormData] = useState<LoginFormData | SignupFormData>({
     email: '',
@@ -17,6 +19,14 @@ export function AuthDialog() {
   });
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
+
+  // Redirect to dashboard after successful authentication
+  useEffect(() => {
+    if (isAuthenticated && isOpen) {
+      dispatch(closeAuthDialog());
+      router.push('/private/dashboard');
+    }
+  }, [isAuthenticated, isOpen, dispatch, router]);
 
   const validatePassword = (password: string) => {
     if (password.length < 8) {

@@ -35,22 +35,22 @@ export default function PublicPage() {
       </nav>
 
       {/* Hero Section */}
-      <div className="px-6 py-20">
+      <div className="px-3 py-10 sm:px-6 sm:py-16 md:py-20">
         <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
+          <h1 className="text-3xl leading-tight sm:text-5xl md:text-6xl font-bold text-white mb-4 sm:mb-6">
             Transform Your Videos Into
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
+            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400 leading-[1.1] sm:leading-tight">
               Powerful Insights
             </span>
           </h1>
-          <p className="text-xl text-indigo-200 mb-8 max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-indigo-200 mb-6 sm:mb-8 max-w-3xl mx-auto">
             Upload your videos and get AI-powered analysis, summaries, and actionable insights 
             to enhance your content strategy and reach more viewers.
           </p>
           <div className="flex justify-center">
             <button
               onClick={handleGetStarted}
-              className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105"
+              className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-5 py-3 sm:px-8 sm:py-4 rounded-lg text-base sm:text-lg font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105"
             >
               Start Analyzing Videos
             </button>
@@ -97,17 +97,17 @@ export default function PublicPage() {
       </div>
 
       {/* CTA Section */}
-      <div className="px-6 py-20">
+      <div className="px-3 py-10 sm:px-6 sm:py-16 md:py-20">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4 sm:mb-6">
             Ready to Transform Your Content?
           </h2>
-          <p className="text-xl text-indigo-200 mb-8">
+          <p className="text-base sm:text-lg md:text-xl text-indigo-200 mb-6 sm:mb-8">
             Join thousands of creators who are already using SummaryVideos to enhance their content.
           </p>
           <button
             onClick={handleGetStarted}
-            className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105"
+            className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-5 py-3 sm:px-8 sm:py-4 rounded-lg text-base sm:text-lg font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105"
           >
             Get Started Free
           </button>

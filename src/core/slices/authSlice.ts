@@ -2,6 +2,20 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { AuthState, User, LoginFormData, SignupFormData } from '../../types/auth';
 import * as authApi from '../../lib/api/authApi';
 
+// Helper function to safely set cookies only on client side
+const setAuthCookie = (token: string) => {
+  if (typeof window !== 'undefined') {
+    document.cookie = `auth_token=${token}; path=/; max-age=${15 * 24 * 60 * 60}; samesite=lax`;
+  }
+};
+
+// Helper function to safely clear cookies only on client side
+const clearAuthCookie = () => {
+  if (typeof window !== 'undefined') {
+    document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+  }
+};
+
 const initialState: AuthState = {
   user: null,
   token: typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null,
@@ -17,6 +31,7 @@ export const loginUser = createAsyncThunk(
     try {
       const response = await authApi.login(data);
       localStorage.setItem('auth_token', response.token);
+      setAuthCookie(response.token);
       return response;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Login failed');
@@ -30,6 +45,7 @@ export const signupUser = createAsyncThunk(
     try {
       const response = await authApi.signup(data);
       localStorage.setItem('auth_token', response.token);
+      setAuthCookie(response.token);
       return response;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Signup failed');
@@ -59,6 +75,7 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.error = null;
       localStorage.removeItem('auth_token');
+      clearAuthCookie();
     },
     clearError: (state) => {
       state.error = null;
@@ -73,6 +90,7 @@ const authSlice = createSlice({
       state.isAuthenticated = true;
       state.error = null;
       localStorage.setItem('auth_token', action.payload.token);
+      setAuthCookie(action.payload.token);
     },
   },
   extraReducers: (builder) => {
