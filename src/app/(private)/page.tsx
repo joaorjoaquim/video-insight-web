@@ -1,10 +1,10 @@
 'use client';
 import React, { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useAppSelector } from '../../../core/hooks';
-import { logout, setOAuthSession, fetchProfile } from '../../../core/slices/authSlice';
-import { useAppDispatch } from '../../../core/hooks';
-import * as authApi from '../../../lib/api/authApi';
+import { useAppSelector } from '../../core/hooks';
+import { logout, setOAuthSession, fetchProfile } from '../../core/slices/authSlice';
+import { useAppDispatch } from '../../core/hooks';
+import * as authApi from '../../lib/api/authApi';
 
 function DashboardContent() {
   const dispatch = useAppDispatch();
