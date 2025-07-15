@@ -1,30 +1,28 @@
 "use client";
-import React, { useState } from "react";
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  BarChartIcon,
+  BuildingIcon,
+  CreditCardIcon,
+  DiamondIcon,
+  RocketIcon,
+  StarIcon,
+  VideoIcon,
+  Wallet01Icon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { useState } from "react";
 import PrivateHeader from "../../../components/layout/private-header";
 import { Button } from "../../../components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
   DialogTrigger,
 } from "../../../components/ui/dialog";
-import { HugeiconsIcon } from "@hugeicons/react";
-import {
-  CreditCardIcon,
-  CheckmarkCircle01Icon,
-  Wallet01Icon,
-  ArrowDownIcon,
-  VideoIcon,
-  RocketIcon,
-  StarIcon,
-  DiamondIcon,
-  BuildingIcon,
-  BarChartIcon,
-  ArrowLeftIcon,
-  ArrowRightIcon,
-} from "@hugeicons/core-free-icons";
 import { useAppSelector } from "../../../core/hooks";
 import { useCredits } from "../../../lib/api/hooks";
-import { formatSubmissionDate } from "../../../lib/utils/date-formatter";
 
 const creditPackages = [
   {
@@ -276,7 +274,9 @@ export default function WalletPage() {
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-4xl w-full max-h-[95vh] overflow-y-auto">
-                    <h3 className="text-xl font-bold mb-6">Credit Packages</h3>
+                    <DialogTitle className="text-xl font-bold mb-6">
+                      Credit Packages
+                    </DialogTitle>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                       {creditPackages.map((pkg) => {
                         const IconComponent = pkg.icon;
@@ -435,11 +435,6 @@ export default function WalletPage() {
                         </div>
                         <div className="text-sm text-zinc-500">
                           {formatActivityDate(transaction.createdAt)}
-                          {transaction.referenceType && (
-                            <span className="ml-2 text-xs bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded">
-                              {transaction.referenceType}
-                            </span>
-                          )}
                         </div>
                       </div>
                     </div>
