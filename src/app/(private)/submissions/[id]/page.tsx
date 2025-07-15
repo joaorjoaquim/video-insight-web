@@ -1,24 +1,23 @@
 "use client";
-import React, { useState } from "react";
 import Link from "next/link";
-import PrivateHeader from "../../../../components/layout/private-header";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../../../components/ui/tabs";
-import { Button } from "../../../../components/ui/button";
-import { Badge } from "../../../../components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { PlayCircle02Icon, CheckmarkCircle01Icon, Download01Icon, Copy01Icon, Share01Icon } from "@hugeicons/core-free-icons";
+import { useParams } from "next/navigation";
+import { useState } from "react";
 import InsightsList from "../../../../components/insights/insights-list";
 import MindMap from "../../../../components/insights/mind-map";
+import PrivateHeader from "../../../../components/layout/private-header";
 import SubmissionHeader from "../../../../components/submissions/submission-header";
 import SummaryMetrics from "../../../../components/submissions/summary-metrics";
 import TranscriptView from "../../../../components/submissions/transcript-view";
 import ActionButtons from "../../../../components/ui/action-buttons";
-import ViewToggle from "../../../../components/ui/view-toggle";
 import Breadcrumb from "../../../../components/ui/breadcrumb";
-import { Submission } from "../../../../types/submission";
+import { Button } from "../../../../components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../../components/ui/tabs";
+import ViewToggle from "../../../../components/ui/view-toggle";
+import { useVideo, useVideoStatus } from "../../../../lib/api/hooks";
+import { formatSubmissionDate } from "../../../../lib/utils/date-formatter";
 
-const mockSubmission: Submission = {
+const mockSubmission: any = {
   id: "1",
   title: "How to Build a SaaS Application",
   status: "completed",
@@ -26,12 +25,6 @@ const mockSubmission: Submission = {
   createdAt: "Processed on May 15, 2023",
   duration: "12:45",
   platform: "YouTube",
-  steps: [
-    { label: "Downloaded", done: true },
-    { label: "Transcribed", done: true },
-    { label: "Processed", done: true },
-    { label: "Complete", done: true },
-  ],
   summary: {
     text: `This video provides a comprehensive guide to building a SaaS (Software as a Service) application from scratch. The presenter covers everything from initial planning and architecture to deployment and scaling.\n\nKey areas covered include choosing the right tech stack for different types of SaaS applications, implementing authentication and authorization systems, setting up payment processing with Stripe, and designing database schemas that can scale with your business.\n\nThe presenter emphasizes the importance of starting with a minimum viable product (MVP) and iterating based on user feedback. They demonstrate how to set up a continuous integration and deployment pipeline to streamline the development process.`,
     metrics: [
@@ -40,6 +33,13 @@ const mockSubmission: Submission = {
       { label: "Key Insights", value: "12" },
       { label: "Complexity", value: "Intermediate" },
     ],
+    topics: [
+      "Tech Stack Selection",
+      "Authentication & Authorization", 
+      "Payment Processing",
+      "Database Design",
+      "Continuous Deployment"
+    ]
   },
   transcript: [
     { time: "00:00", text: "Welcome to the SaaS Application course." },
@@ -103,14 +103,135 @@ const mockSubmission: Submission = {
       },
     ],
   },
+  mindMap: {
+    root: "Video Insights",
+    branches: [
+      {
+        label: "Problems",
+        children: [
+          { label: "Fighting Fires" },
+          { label: "Urgent vs. Important" }
+        ]
+      },
+      {
+        label: "Tips", 
+        children: [
+          { label: "Focus on Micro Tasks" },
+          { label: "Use Just-in-Time Learning" }
+        ]
+      }
+    ]
+  }
 };
 
 const mindMapImg = "/mindmap-example.png"; // Use a local asset ou placeholder
 
 export default function SubmissionDetailPage() {
+  const params = useParams();
+  const videoId = params.id as string;
+  
   const [tab, setTab] = useState("summary");
   const [insightView, setInsightView] = useState<"list" | "mindmap">("list");
-  const s = mockSubmission;
+  
+  // TanStack Query hooks
+  const { data: video, isLoading, error } = useVideo(videoId);
+  const { data: statusData } = useVideoStatus(
+    videoId,
+    video?.status === 'pending' || video?.status === 'downloaded' || video?.status === 'transcribing'
+  );
+
+  // Check if video is completed
+  const isVideoCompleted = video?.status === 'completed';
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#f8f6fc] to-white dark:from-zinc-950 dark:to-zinc-900">
+        <PrivateHeader />
+        <main className="max-w-4xl mx-auto px-4 pt-8 pb-16">
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+            <p className="text-zinc-500">Loading video details...</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#f8f6fc] to-white dark:from-zinc-950 dark:to-zinc-900">
+        <PrivateHeader />
+        <main className="max-w-4xl mx-auto px-4 pt-8 pb-16">
+          <div className="text-center py-8">
+            <p className="text-red-500 mb-2">Failed to load video details</p>
+            <p className="text-sm text-zinc-500">Please try again later</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Video not completed state
+  if (!isLoading && !error && !isVideoCompleted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#f8f6fc] to-white dark:from-zinc-950 dark:to-zinc-900">
+        <PrivateHeader />
+        <main className="max-w-4xl mx-auto px-4 pt-8 pb-16">
+          <div className="text-center py-12">
+            <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-8 max-w-md mx-auto">
+              <div className="text-6xl mb-4">⏳</div>
+              <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">
+                Video Still Processing
+              </h1>
+              <p className="text-zinc-600 dark:text-zinc-300 mb-6">
+                This video is currently being processed. The detailed analysis will be available once processing is complete.
+              </p>
+              <div className="space-y-3">
+                <p className="text-sm text-zinc-500">
+                  <strong>Current Status:</strong> {video?.status ? (video.status.charAt(0).toUpperCase() + video.status.slice(1)) : "Unknown"}
+                </p>
+                <p className="text-sm text-zinc-500">
+                  <strong>Video:</strong> {video?.title}
+                </p>
+              </div>
+              <div className="mt-8 space-y-3">
+                <Link href="/dashboard">
+                  <Button className="w-full">
+                    Back to Dashboard
+                  </Button>
+                </Link>
+                <Link href="/submissions">
+                  <Button variant="outline" className="w-full">
+                    View All Submissions
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Use real data if available, otherwise fallback to mock
+  const videoData = video || mockSubmission;
+  
+  // Ensure videoData is not undefined
+  if (!videoData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#f8f6fc] to-white dark:from-zinc-950 dark:to-zinc-900">
+        <PrivateHeader />
+        <main className="max-w-4xl mx-auto px-4 pt-8 pb-16">
+          <div className="text-center py-8">
+            <p className="text-red-500 mb-2">Video data not available</p>
+            <p className="text-sm text-zinc-500">Please try again later</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#f8f6fc] to-white dark:from-zinc-950 dark:to-zinc-900">
@@ -119,18 +240,18 @@ export default function SubmissionDetailPage() {
         <Breadcrumb
           items={[
             { label: "Back to Dashboard", href: "/dashboard" },
-            { label: s.title },
+            { label: videoData.title || "Untitled Video" },
           ]}
         />
         
         {/* Header Section */}
         <SubmissionHeader
-          title={s.title}
-          status={s.status}
-          duration={s.duration}
-          createdAt={s.createdAt}
-          platform={s.platform}
-          steps={s.steps}
+          title={videoData.title || "Untitled Video"}
+          status={videoData.status || "unknown"}
+          duration={videoData.duration || ""}
+          createdAt={videoData.createdAt ? formatSubmissionDate(videoData.createdAt) : "Unknown date"}
+          platform="YouTube"
+          steps={[]}
         />
 
         {/* Tabs Section */}
@@ -151,9 +272,9 @@ export default function SubmissionDetailPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="text-zinc-700 dark:text-zinc-200 whitespace-pre-line leading-relaxed">
-                  {s.summary.text}
+                  {videoData.summary?.text ? videoData.summary.text : "No summary available."}
                 </div>
-                <SummaryMetrics metrics={s.summary.metrics} />
+                <SummaryMetrics metrics={videoData.summary?.metrics || []} />
               </CardContent>
             </Card>
           </TabsContent>
@@ -167,7 +288,7 @@ export default function SubmissionDetailPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <TranscriptView transcript={s.transcript} />
+                <TranscriptView transcript={videoData.transcript || []} />
               </CardContent>
             </Card>
           </TabsContent>
@@ -189,9 +310,12 @@ export default function SubmissionDetailPage() {
               </CardHeader>
               <CardContent>
                 {insightView === "list" ? (
-                  <InsightsList chips={s.insights.chips} sections={s.insights.sections} />
+                  <InsightsList 
+                    chips={videoData.insights?.chips || []} 
+                    sections={videoData.insights?.sections || []} 
+                  />
                 ) : (
-                  <MindMap data={s.insights} />
+                  <MindMap data={videoData.mindMap || { root: "Video Insights", branches: [] }} />
                 )}
               </CardContent>
             </Card>

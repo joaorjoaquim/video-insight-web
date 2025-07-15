@@ -12,6 +12,7 @@ import { SubmissionList } from "../../../components/submissions/submission-list"
 import { FAQAccordion } from "../../../components/faq/faq-accordion";
 import VideoPreview from "../../../components/submissions/video-preview";
 import { getVideoMetadata, isValidVideoUrl, VideoMetadata, detectPlatform } from "../../../lib/utils/video-metadata";
+import { useSubmitVideo } from "../../../lib/api/hooks";
 
 // Typebox schema
 const VideoURLSchema = Type.Object({
@@ -22,8 +23,10 @@ type VideoURLForm = Static<typeof VideoURLSchema>;
 export default function DashboardPage() {
   const [videoMetadata, setVideoMetadata] = useState<VideoMetadata | null>(null);
   const [isLoadingMetadata, setIsLoadingMetadata] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
   const [metadataError, setMetadataError] = useState<string | null>(null);
+  
+  // TanStack Query hook for video submission
+  const submitVideoMutation = useSubmitVideo();
 
   // react-hook-form setup
   const { register, handleSubmit, formState: { errors, isSubmitting }, watch, setValue } = useForm<VideoURLForm>({
@@ -81,15 +84,16 @@ export default function DashboardPage() {
   const handleProcessVideo = async () => {
     if (!videoMetadata) return;
     
-    setIsProcessing(true);
     try {
-      // TODO: POST /video
-      console.log('Processing video:', videoMetadata);
-      alert(`Processing: ${videoMetadata.title}`);
+      await submitVideoMutation.mutateAsync({
+        videoUrl: videoMetadata.url
+      });
+      
+      // Reset form after successful submission
+      setVideoMetadata(null);
+      setValue("url", "");
     } catch (error) {
       console.error('Error processing video:', error);
-    } finally {
-      setIsProcessing(false);
     }
   };
 
@@ -136,7 +140,7 @@ export default function DashboardPage() {
                 metadata={videoMetadata}
                 onRemove={handleRemoveVideo}
                 onProcess={handleProcessVideo}
-                isProcessing={isProcessing}
+                isProcessing={submitVideoMutation.isPending}
                 error={metadataError}
               />
             </div>

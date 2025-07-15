@@ -11,6 +11,8 @@ export interface SummaryMetric {
 export interface Summary {
   text: string;
   metrics: SummaryMetric[];
+  topics?: string[];
+  warnings?: string[];
 }
 
 export interface TranscriptBlock {
@@ -34,18 +36,31 @@ export interface InsightSection {
 export interface Insights {
   chips: Array<{ label: string; variant: "secondary" | "destructive" }>;
   sections: InsightSection[];
+  topics?: string[];
+  summary?: string;
+  warnings?: string[];
+  extractedAt?: string;
+  processedChunks?: number;
+  originalTokenCount?: number;
 }
 
 export interface Submission {
-  id: string;
+  id: string | number;
+  videoUrl?: string;
   title: string;
   status: string;
+  thumbnail?: string;
   thumbnailUrl?: string;
   createdAt: string;
-  duration: string;
-  platform: string;
-  steps: SubmissionStep[];
+  updatedAt?: string;
+  videoId?: string;
+  duration: number | string;
+  platform?: string;
+  downloadUrl?: string;
+  transcriptionId?: string;
+  transcription?: string;
   summary: Summary;
-  transcript: TranscriptBlock[];
+  transcript?: TranscriptBlock[];
   insights: Insights;
+  errorMessage?: string;
 } 

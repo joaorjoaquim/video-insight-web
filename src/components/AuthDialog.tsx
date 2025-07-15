@@ -24,7 +24,7 @@ export function AuthDialog() {
   useEffect(() => {
     if (isAuthenticated && isOpen) {
       dispatch(closeAuthDialog());
-      router.push('/private/dashboard');
+      router.push('/dashboard');
     }
   }, [isAuthenticated, isOpen, dispatch, router]);
 

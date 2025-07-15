@@ -30,11 +30,11 @@ function AuthCallbackContent() {
           dispatch(setOAuthSession({ user, token }));
           
           // Redirect to dashboard
-          router.push('/private/dashboard');
+          router.push('/dashboard');
         } catch (error) {
           console.error('Failed to fetch user profile:', error);
           // If profile fetch fails, still redirect but user will need to refresh
-          router.push('/private/dashboard');
+          router.push('/dashboard');
         }
       } else if (error) {
         // Redirect to public page with error

@@ -4,20 +4,22 @@ import { PlayCircle02Icon } from "@hugeicons/core-free-icons";
 import { Button } from "../ui/button";
 import Link from "next/link";
 
-export type SubmissionStatus = "completed" | "processing" | "failed";
+export type SubmissionStatus = "pending" | "downloaded" | "transcribing" | "completed" | "failed";
 
 export interface SubmissionCardProps {
   id: string;
   title: string;
   status: SubmissionStatus;
-  thumbnailUrl?: string;
+  thumbnail?: string;
   createdAt: string;
   progress?: number; // 0-100, opcional para status processing
 }
 
 const statusColors: Record<SubmissionStatus, string> = {
+  pending: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200",
+  downloaded: "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-200",
+  transcribing: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
   completed: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200",
-  processing: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
   failed: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200",
 };
 
@@ -25,15 +27,15 @@ export function SubmissionCard({
   id,
   title,
   status,
-  thumbnailUrl,
+  thumbnail,
   createdAt,
   progress,
 }: SubmissionCardProps) {
   return (
     <div className="bg-white dark:bg-zinc-900 rounded-lg shadow p-4 flex flex-col">
       <div className="aspect-video bg-zinc-100 dark:bg-zinc-800 rounded mb-3 flex items-center justify-center overflow-hidden">
-        {thumbnailUrl ? (
-          <img src={thumbnailUrl} alt={title} className="object-cover w-full h-full" />
+        {thumbnail ? (
+          <img src={thumbnail} alt={title} className="object-cover w-full h-full" />
         ) : (
           <HugeiconsIcon icon={PlayCircle02Icon} className="text-4xl text-indigo-400" />
         )}
@@ -44,14 +46,20 @@ export function SubmissionCard({
           <span className={`ml-auto text-xs px-2 py-0.5 rounded ${statusColors[status]}`}>{status.charAt(0).toUpperCase() + status.slice(1)}</span>
         </div>
         <div className="text-xs text-zinc-500 mb-2">{createdAt}</div>
-        {status === "processing" && typeof progress === "number" && (
+        {(status === "transcribing" || status === "downloaded") && typeof progress === "number" && (
           <div className="w-full h-2 bg-zinc-200 dark:bg-zinc-800 rounded mb-2 overflow-hidden">
             <div className="h-full bg-indigo-500 transition-all duration-300" style={{ width: `${progress}%` }} />
           </div>
         )}
-        <Link href={`/submissions/${id}`}>
-          <Button variant="outline" size="sm" className="w-full mt-1">View Details</Button>
-        </Link>
+        {status === "completed" ? (
+          <Link href={`/submissions/${id}`}>
+            <Button variant="outline" size="sm" className="w-full mt-1">View Details</Button>
+          </Link>
+        ) : (
+          <Button variant="outline" size="sm" className="w-full mt-1" disabled>
+            Processing...
+          </Button>
+        )}
       </div>
     </div>
   );

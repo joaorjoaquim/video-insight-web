@@ -4,6 +4,7 @@ import { Provider } from 'react-redux';
 import { store } from '../store';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import { fetchProfile } from '../slices/authSlice';
+import { QueryProvider } from './QueryProvider';
 
 interface GlobalProviderProps {
   children: ReactNode;
@@ -25,9 +26,11 @@ function AuthInitializer({ children }: { children: ReactNode }) {
 export function GlobalProvider({ children }: GlobalProviderProps) {
   return (
     <Provider store={store}>
-      <AuthInitializer>
-        {children}
-      </AuthInitializer>
+      <QueryProvider>
+        <AuthInitializer>
+          {children}
+        </AuthInitializer>
+      </QueryProvider>
     </Provider>
   );
 } 
