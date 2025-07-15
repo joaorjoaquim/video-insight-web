@@ -6,7 +6,15 @@ import { InsightItem, InsightSection } from "../../types/submission";
 
 interface InsightsListProps {
   chips: Array<{ label: string; variant: "secondary" | "destructive" }>;
-  sections: InsightSection[];
+  sections: Array<{
+    title: string;
+    icon: string;
+    items: Array<{
+      text: string;
+      confidence?: number;
+      key?: boolean;
+    }>;
+  }>;
 }
 
 export default function InsightsList({ chips, sections }: InsightsListProps) {
@@ -23,15 +31,20 @@ export default function InsightsList({ chips, sections }: InsightsListProps) {
         {sections.map((section, i) => (
           <div key={i} className="border-l-2 border-purple-200 pl-4">
             <div className="flex items-center gap-2 mb-3">
-              {section.icon}
-              <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">{section.title}</h3>
+              <span className="text-2xl">{section.icon}</span>
+              <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">
+                {section.title}
+              </h3>
             </div>
             <div className="space-y-3 ml-6">
               {section.items.map((item, j) => (
                 <div key={j} className="flex items-start gap-2">
                   <div className="flex gap-2 mt-0.5">
                     {item.confidence && (
-                      <Badge variant="secondary" className="text-xs font-mono font-semibold">
+                      <Badge
+                        variant="secondary"
+                        className="text-xs font-mono font-semibold"
+                      >
                         {item.confidence}%
                       </Badge>
                     )}
@@ -41,7 +54,7 @@ export default function InsightsList({ chips, sections }: InsightsListProps) {
                       </Badge>
                     )}
                   </div>
-                  <span className={`text-zinc-700 dark:text-zinc-200 ${item.quote ? "italic text-zinc-500" : ""}`}>
+                  <span className="text-zinc-700 dark:text-zinc-200">
                     {item.text}
                   </span>
                 </div>
@@ -52,4 +65,4 @@ export default function InsightsList({ chips, sections }: InsightsListProps) {
       </div>
     </>
   );
-} 
+}

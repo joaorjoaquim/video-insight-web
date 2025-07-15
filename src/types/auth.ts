@@ -5,6 +5,7 @@ export interface User {
   avatarUrl?: string;
   provider?: string;
   providerId?: string;
+  credits: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -29,5 +30,5 @@ export interface SignupFormData {
 
 export interface AuthDialogState {
   isOpen: boolean;
-  mode: 'login' | 'signup';
-} 
+  mode: "login" | "signup";
+}

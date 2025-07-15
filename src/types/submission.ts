@@ -29,7 +29,7 @@ export interface InsightItem {
 
 export interface InsightSection {
   title: string;
-  icon: React.ReactNode;
+  icon: string;
   items: InsightItem[];
 }
 
@@ -42,6 +42,16 @@ export interface Insights {
   extractedAt?: string;
   processedChunks?: number;
   originalTokenCount?: number;
+}
+
+export interface MindMapNode {
+  label: string;
+  children?: MindMapNode[];
+}
+
+export interface MindMap {
+  root: string;
+  branches: MindMapNode[];
 }
 
 export interface Submission {
@@ -62,5 +72,6 @@ export interface Submission {
   summary: Summary;
   transcript?: TranscriptBlock[];
   insights: Insights;
+  mindMap?: MindMap;
   errorMessage?: string;
-} 
+}

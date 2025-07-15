@@ -1,9 +1,9 @@
-import api from './axios';
-import { Submission } from '@/types/submission';
+import api from "./axios";
+import { Submission } from "@/types/submission";
 
 // API endpoints
 const ENDPOINTS = {
-  VIDEOS: '/video',
+  VIDEOS: "/video",
   VIDEO: (id: string) => `/video/${id}`,
   VIDEO_STATUS: (id: string) => `/video/${id}/status`,
 } as const;
@@ -15,7 +15,7 @@ export interface SubmitVideoRequest {
 
 export interface SubmitVideoResponse {
   id: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
+  status: "pending" | "processing" | "completed" | "failed";
   message?: string;
 }
 
@@ -30,29 +30,48 @@ export interface VideoResponse {
   userId: number;
   createdAt: string;
   updatedAt: string;
+  message: string;
   videoId: string;
   title: string;
   thumbnail: string;
   duration: number;
   downloadUrl: string;
   transcriptionId: string;
-  transcription: string;
-  summary: string;
-  insights: {
-    topics: string[];
-    summary: string;
-    warnings: string[];
-    extractedAt: string;
-    processedChunks: number;
-    originalTokenCount: number;
-  };
+  transcription: string; // This is a string, not an array
   errorMessage: string;
+  summary: {
+    text: string;
+    metrics: Array<{ label: string; value: string }>;
+    topics: string[];
+  };
+  transcript?: Array<{ time: string; text: string }>; // Optional, we'll generate from transcription
+  insights: {
+    chips: Array<{ label: string; variant: "secondary" | "destructive" }>;
+    sections: Array<{
+      title: string;
+      icon: string;
+      items: Array<{
+        text: string;
+        confidence?: number;
+        key?: boolean;
+      }>;
+    }>;
+  };
+  mindMap?: {
+    root: string;
+    branches: Array<{
+      label: string;
+      children: Array<{ label: string }>;
+    }>;
+  };
 }
 
 // API functions
 export const videoInsightApi = {
   // Submit a new video
-  submitVideo: async (data: SubmitVideoRequest): Promise<SubmitVideoResponse> => {
+  submitVideo: async (
+    data: SubmitVideoRequest
+  ): Promise<SubmitVideoResponse> => {
     const response = await api.post(ENDPOINTS.VIDEOS, data);
     return response.data;
   },
@@ -70,7 +89,9 @@ export const videoInsightApi = {
   },
 
   // Get video status (for polling)
-  getVideoStatus: async (id: string): Promise<{ status: string; progress?: number }> => {
+  getVideoStatus: async (
+    id: string
+  ): Promise<{ status: string; progress?: number }> => {
     const response = await api.get(ENDPOINTS.VIDEO_STATUS(id));
     return response.data;
   },
@@ -78,7 +99,7 @@ export const videoInsightApi = {
 
 // Query keys for TanStack Query
 export const queryKeys = {
-  videos: ['videos'] as const,
-  video: (id: string) => ['video', id] as const,
-  videoStatus: (id: string) => ['video-status', id] as const,
-} as const; 
+  videos: ["videos"] as const,
+  video: (id: string) => ["video", id] as const,
+  videoStatus: (id: string) => ["video-status", id] as const,
+} as const;

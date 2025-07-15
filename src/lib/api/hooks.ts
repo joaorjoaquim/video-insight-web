@@ -1,16 +1,21 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { videoInsightApi, queryKeys, SubmitVideoRequest } from './videoInsightApi';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  videoInsightApi,
+  queryKeys,
+  SubmitVideoRequest,
+} from "./videoInsightApi";
+import { getCredits } from "./authApi";
 
 // Hook for submitting a new video
 export const useSubmitVideo = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: (data: SubmitVideoRequest) => videoInsightApi.submitVideo(data),
     onSuccess: (data) => {
       // Invalidate and refetch videos list
       queryClient.invalidateQueries({ queryKey: queryKeys.videos });
-      
+
       // Optimistically add the new video to the cache
       queryClient.setQueryData(queryKeys.videos, (old: any) => {
         if (!old) return old;
@@ -19,24 +24,24 @@ export const useSubmitVideo = () => {
           videos: [
             {
               id: data.id,
-              title: data.message || 'Processing...',
+              title: data.message || "Processing...",
               status: data.status,
               createdAt: new Date().toISOString(),
-              duration: '',
-              platform: 'unknown',
+              duration: "",
+              platform: "unknown",
               steps: [],
-              summary: { text: '', metrics: [] },
+              summary: { text: "", metrics: [] },
               transcript: [],
-              insights: { chips: [], sections: [] }
+              insights: { chips: [], sections: [] },
             },
-            ...old.videos
-          ]
+            ...old.videos,
+          ],
         };
       });
     },
     onError: (error) => {
-      console.error('Error submitting video:', error);
-    }
+      console.error("Error submitting video:", error);
+    },
   });
 };
 
@@ -75,7 +80,7 @@ export const useVideoStatus = (id: string, enabled = true) => {
 // Hook for optimistic updates when video status changes
 export const useVideoStatusUpdate = () => {
   const queryClient = useQueryClient();
-  
+
   return {
     updateVideoStatus: (id: string, status: string, progress?: number) => {
       // Update the video in the cache
@@ -85,11 +90,11 @@ export const useVideoStatusUpdate = () => {
           ...old,
           video: {
             ...old.video,
-            status
-          }
+            status,
+          },
         };
       });
-      
+
       // Update the videos list
       queryClient.setQueryData(queryKeys.videos, (old: any) => {
         if (!old) return old;
@@ -97,9 +102,19 @@ export const useVideoStatusUpdate = () => {
           ...old,
           videos: old.videos.map((video: any) =>
             video.id === id ? { ...video, status } : video
-          )
+          ),
         };
       });
-    }
+    },
   };
-}; 
+};
+
+// Hook for fetching credits and transactions
+export const useCredits = () => {
+  return useQuery({
+    queryKey: ["credits"],
+    queryFn: () => getCredits(),
+    staleTime: 30 * 1000, // 30 seconds
+    refetchOnWindowFocus: true,
+  });
+};

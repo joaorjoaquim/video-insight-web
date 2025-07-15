@@ -11,11 +11,51 @@ import TranscriptView from "../../../../components/submissions/transcript-view";
 import ActionButtons from "../../../../components/ui/action-buttons";
 import Breadcrumb from "../../../../components/ui/breadcrumb";
 import { Button } from "../../../../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../../components/ui/tabs";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../../../../components/ui/card";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../../../../components/ui/tabs";
 import ViewToggle from "../../../../components/ui/view-toggle";
-import { useVideo, useVideoStatus } from "../../../../lib/api/hooks";
+import { useVideo } from "../../../../lib/api/hooks";
 import { formatSubmissionDate } from "../../../../lib/utils/date-formatter";
+
+// Function to parse transcription string into transcript array
+const parseTranscription = (
+  transcription: string,
+  duration: number
+): Array<{ time: string; text: string }> => {
+  if (!transcription) return [];
+
+  // Split transcription into sentences
+  const sentences = transcription
+    .split(/[.!?]+/)
+    .filter((s) => s.trim().length > 0);
+
+  // Calculate time intervals
+  const timePerSentence = duration / sentences.length;
+
+  return sentences.map((sentence, index) => {
+    const timeInSeconds = index * timePerSentence;
+    const minutes = Math.floor(timeInSeconds / 60);
+    const seconds = Math.floor(timeInSeconds % 60);
+    const time = `${minutes.toString().padStart(2, "0")}:${seconds
+      .toString()
+      .padStart(2, "0")}`;
+
+    return {
+      time,
+      text: sentence.trim(),
+    };
+  });
+};
 
 const mockSubmission: any = {
   id: "1",
@@ -35,11 +75,11 @@ const mockSubmission: any = {
     ],
     topics: [
       "Tech Stack Selection",
-      "Authentication & Authorization", 
+      "Authentication & Authorization",
       "Payment Processing",
       "Database Design",
-      "Continuous Deployment"
-    ]
+      "Continuous Deployment",
+    ],
   },
   transcript: [
     { time: "00:00", text: "Welcome to the SaaS Application course." },
@@ -60,45 +100,130 @@ const mockSubmission: any = {
     sections: [
       {
         title: "Tech Stack Selection",
-        icon: <span className="text-purple-400">{String.fromCodePoint(0x1F4BB)}</span>,
+        icon: (
+          <span className="text-purple-400">
+            {String.fromCodePoint(0x1f4bb)}
+          </span>
+        ),
         items: [
-          { text: "Frontend frameworks like React, Vue, or Angular are ideal for SaaS UIs", confidence: 95, key: false, quote: false },
-          { text: "Node.js and Express are recommended for backend API development", confidence: 92, key: false, quote: false },
-          { text: "Choose your tech stack based on team expertise rather than trends", key: true, confidence: undefined, quote: false },
+          {
+            text: "Frontend frameworks like React, Vue, or Angular are ideal for SaaS UIs",
+            confidence: 95,
+            key: false,
+            quote: false,
+          },
+          {
+            text: "Node.js and Express are recommended for backend API development",
+            confidence: 92,
+            key: false,
+            quote: false,
+          },
+          {
+            text: "Choose your tech stack based on team expertise rather than trends",
+            key: true,
+            confidence: undefined,
+            quote: false,
+          },
         ],
       },
       {
         title: "Authentication & Authorization",
-        icon: <span className="text-purple-400">{String.fromCodePoint(0x1F512)}</span>,
+        icon: (
+          <span className="text-purple-400">
+            {String.fromCodePoint(0x1f512)}
+          </span>
+        ),
         items: [
-          { text: "OAuth 2.0 is recommended for secure third-party authentication", confidence: 88, key: false, quote: false },
-          { text: "JWT tokens provide stateless authentication for scalable applications", confidence: 90, key: false, quote: false },
-          { text: '"Always implement role-based access control from day one"', quote: true, key: false, confidence: undefined },
+          {
+            text: "OAuth 2.0 is recommended for secure third-party authentication",
+            confidence: 88,
+            key: false,
+            quote: false,
+          },
+          {
+            text: "JWT tokens provide stateless authentication for scalable applications",
+            confidence: 90,
+            key: false,
+            quote: false,
+          },
+          {
+            text: '"Always implement role-based access control from day one"',
+            quote: true,
+            key: false,
+            confidence: undefined,
+          },
         ],
       },
       {
         title: "Payment Processing",
-        icon: <span className="text-purple-400">{String.fromCodePoint(0x1F4B3)}</span>,
+        icon: (
+          <span className="text-purple-400">
+            {String.fromCodePoint(0x1f4b3)}
+          </span>
+        ),
         items: [
-          { text: "Stripe is recommended for subscription management and payment processing", confidence: 94, key: false, quote: false },
-          { text: "Implement usage-based billing for better customer value alignment", key: true, confidence: undefined, quote: false },
+          {
+            text: "Stripe is recommended for subscription management and payment processing",
+            confidence: 94,
+            key: false,
+            quote: false,
+          },
+          {
+            text: "Implement usage-based billing for better customer value alignment",
+            key: true,
+            confidence: undefined,
+            quote: false,
+          },
         ],
       },
       {
         title: "Database Design",
-        icon: <span className="text-purple-400">{String.fromCodePoint(0x1F4C8)}</span>,
+        icon: (
+          <span className="text-purple-400">
+            {String.fromCodePoint(0x1f4c8)}
+          </span>
+        ),
         items: [
-          { text: "Multi-tenant architecture with database isolation improves security", confidence: 89, key: false, quote: false },
-          { text: "Consider NoSQL for flexibility or SQL for complex relationships", confidence: 85, key: false, quote: false },
+          {
+            text: "Multi-tenant architecture with database isolation improves security",
+            confidence: 89,
+            key: false,
+            quote: false,
+          },
+          {
+            text: "Consider NoSQL for flexibility or SQL for complex relationships",
+            confidence: 85,
+            key: false,
+            quote: false,
+          },
         ],
       },
       {
         title: "Deployment & Scaling",
-        icon: <span className="text-purple-400">{String.fromCodePoint(0x1F680)}</span>,
+        icon: (
+          <span className="text-purple-400">
+            {String.fromCodePoint(0x1f680)}
+          </span>
+        ),
         items: [
-          { text: "CI/CD pipelines are essential for reliable deployments", confidence: 91, key: false, quote: false },
-          { text: "Containerization with Docker simplifies environment consistency", confidence: 87, key: false, quote: false },
-          { text: "Start with an MVP and iterate based on user feedback", key: true, confidence: undefined, quote: false },
+          {
+            text: "CI/CD pipelines are essential for reliable deployments",
+            confidence: 91,
+            key: false,
+            quote: false,
+          },
+          {
+            text: "Containerization with Docker simplifies environment consistency",
+            confidence: 87,
+            key: false,
+            quote: false,
+          },
+          {
+            text: "Start with an MVP and iterate based on user feedback",
+            key: true,
+            confidence: undefined,
+            quote: false,
+          },
         ],
       },
     ],
@@ -110,18 +235,18 @@ const mockSubmission: any = {
         label: "Problems",
         children: [
           { label: "Fighting Fires" },
-          { label: "Urgent vs. Important" }
-        ]
+          { label: "Urgent vs. Important" },
+        ],
       },
       {
-        label: "Tips", 
+        label: "Tips",
         children: [
           { label: "Focus on Micro Tasks" },
-          { label: "Use Just-in-Time Learning" }
-        ]
-      }
-    ]
-  }
+          { label: "Use Just-in-Time Learning" },
+        ],
+      },
+    ],
+  },
 };
 
 const mindMapImg = "/mindmap-example.png"; // Use a local asset ou placeholder
@@ -129,19 +254,14 @@ const mindMapImg = "/mindmap-example.png"; // Use a local asset ou placeholder
 export default function SubmissionDetailPage() {
   const params = useParams();
   const videoId = params.id as string;
-  
+
   const [tab, setTab] = useState("summary");
   const [insightView, setInsightView] = useState<"list" | "mindmap">("list");
-  
+
   // TanStack Query hooks
   const { data: video, isLoading, error } = useVideo(videoId);
-  const { data: statusData } = useVideoStatus(
-    videoId,
-    video?.status === 'pending' || video?.status === 'downloaded' || video?.status === 'transcribing'
-  );
-
   // Check if video is completed
-  const isVideoCompleted = video?.status === 'completed';
+  const isVideoCompleted = video?.status === "completed";
 
   // Loading state
   if (isLoading) {
@@ -186,11 +306,16 @@ export default function SubmissionDetailPage() {
                 Video Still Processing
               </h1>
               <p className="text-zinc-600 dark:text-zinc-300 mb-6">
-                This video is currently being processed. The detailed analysis will be available once processing is complete.
+                This video is currently being processed. The detailed analysis
+                will be available once processing is complete.
               </p>
               <div className="space-y-3">
                 <p className="text-sm text-zinc-500">
-                  <strong>Current Status:</strong> {video?.status ? (video.status.charAt(0).toUpperCase() + video.status.slice(1)) : "Unknown"}
+                  <strong>Current Status:</strong>{" "}
+                  {video?.status
+                    ? video.status.charAt(0).toUpperCase() +
+                      video.status.slice(1)
+                    : "Unknown"}
                 </p>
                 <p className="text-sm text-zinc-500">
                   <strong>Video:</strong> {video?.title}
@@ -198,9 +323,7 @@ export default function SubmissionDetailPage() {
               </div>
               <div className="mt-8 space-y-3">
                 <Link href="/dashboard">
-                  <Button className="w-full">
-                    Back to Dashboard
-                  </Button>
+                  <Button className="w-full">Back to Dashboard</Button>
                 </Link>
                 <Link href="/submissions">
                   <Button variant="outline" className="w-full">
@@ -217,7 +340,7 @@ export default function SubmissionDetailPage() {
 
   // Use real data if available, otherwise fallback to mock
   const videoData = video || mockSubmission;
-  
+
   // Ensure videoData is not undefined
   if (!videoData) {
     return (
@@ -233,6 +356,27 @@ export default function SubmissionDetailPage() {
     );
   }
 
+  // Transform API data to match component expectations
+  const transformedData = {
+    ...videoData,
+    summary: {
+      text: videoData.summary?.text || "",
+      metrics: videoData.summary?.metrics || [],
+      topics: videoData.summary?.topics || [],
+    },
+    transcript:
+      videoData.transcript ||
+      parseTranscription(
+        videoData.transcription || "",
+        videoData.duration || 0
+      ),
+    insights: {
+      chips: videoData.insights?.chips || [],
+      sections: videoData.insights?.sections || [],
+    },
+    mindMap: videoData.mindMap || { root: "Video Insights", branches: [] },
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#f8f6fc] to-white dark:from-zinc-950 dark:to-zinc-900">
       <PrivateHeader />
@@ -240,17 +384,22 @@ export default function SubmissionDetailPage() {
         <Breadcrumb
           items={[
             { label: "Back to Dashboard", href: "/dashboard" },
-            { label: videoData.title || "Untitled Video" },
+            { label: transformedData.title || "Untitled Video" },
           ]}
         />
-        
+
         {/* Header Section */}
         <SubmissionHeader
-          title={videoData.title || "Untitled Video"}
-          status={videoData.status || "unknown"}
-          duration={videoData.duration || ""}
-          createdAt={videoData.createdAt ? formatSubmissionDate(videoData.createdAt) : "Unknown date"}
+          title={transformedData.title || "Untitled Video"}
+          status={transformedData.status || "unknown"}
+          duration={transformedData.duration || 0}
+          createdAt={
+            transformedData.createdAt
+              ? formatSubmissionDate(transformedData.createdAt)
+              : "Unknown date"
+          }
           platform="YouTube"
+          thumbnail={transformedData.thumbnail}
           steps={[]}
         />
 
@@ -261,7 +410,7 @@ export default function SubmissionDetailPage() {
             <TabsTrigger value="transcript">Transcript</TabsTrigger>
             <TabsTrigger value="insights">Insights</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="summary">
             <Card>
               <CardHeader>
@@ -272,13 +421,17 @@ export default function SubmissionDetailPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="text-zinc-700 dark:text-zinc-200 whitespace-pre-line leading-relaxed">
-                  {videoData.summary?.text ? videoData.summary.text : "No summary available."}
+                  {transformedData.summary?.text
+                    ? transformedData.summary.text
+                    : "No summary available."}
                 </div>
-                <SummaryMetrics metrics={videoData.summary?.metrics || []} />
+                <SummaryMetrics
+                  metrics={transformedData.summary?.metrics || []}
+                />
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="transcript">
             <Card>
               <CardHeader>
@@ -288,11 +441,11 @@ export default function SubmissionDetailPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <TranscriptView transcript={videoData.transcript || []} />
+                <TranscriptView transcript={transformedData.transcript || []} />
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="insights">
             <Card>
               <CardHeader>
@@ -303,19 +456,28 @@ export default function SubmissionDetailPage() {
                       { value: "list", label: "List View" },
                       { value: "mindmap", label: "Mind Map" },
                     ]}
-                    onViewChange={(view) => setInsightView(view as "list" | "mindmap")}
+                    onViewChange={(view) =>
+                      setInsightView(view as "list" | "mindmap")
+                    }
                   />
                   <ActionButtons showShare={true} />
                 </div>
               </CardHeader>
               <CardContent>
                 {insightView === "list" ? (
-                  <InsightsList 
-                    chips={videoData.insights?.chips || []} 
-                    sections={videoData.insights?.sections || []} 
+                  <InsightsList
+                    chips={transformedData.insights?.chips || []}
+                    sections={transformedData.insights?.sections || []}
                   />
                 ) : (
-                  <MindMap data={videoData.mindMap || { root: "Video Insights", branches: [] }} />
+                  <MindMap
+                    data={
+                      transformedData.mindMap || {
+                        root: "Video Insights",
+                        branches: [],
+                      }
+                    }
+                  />
                 )}
               </CardContent>
             </Card>
@@ -324,4 +486,4 @@ export default function SubmissionDetailPage() {
       </main>
     </div>
   );
-} 
+}
