@@ -1,52 +1,90 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Rotas que requerem autenticação
+// Protected routes that require authentication
 const PROTECTED_ROUTES = [
   '/dashboard',
   '/wallet', 
   '/submissions',
-  // Adicione outras rotas privadas aqui
+  // Add other private routes here
 ];
 
-// Rotas que são sempre públicas
+// Public routes that are always accessible
 const PUBLIC_ROUTES = [
   '/',
   '/auth',
   '/api/auth',
-  // Adicione outras rotas públicas aqui
+  // Add other public routes here
 ];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  
-  // Verificar se é uma rota protegida
+
+  // Handle trailing slashes - redirect to non-trailing slash version
+  if (pathname !== '/' && pathname.endsWith('/')) {
+    return NextResponse.redirect(
+      new URL(pathname.slice(0, -1), request.url)
+    );
+  }
+
+  // Handle common typos and redirects
+  const redirects: Record<string, string> = {
+    '/home': '/',
+    '/index': '/',
+    '/main': '/',
+    '/dashboard/': '/dashboard',
+    '/wallet/': '/wallet',
+  };
+
+  if (redirects[pathname]) {
+    return NextResponse.redirect(new URL(redirects[pathname], request.url));
+  }
+
+  // Handle legacy routes or common misspellings
+  if (pathname.startsWith('/submission/')) {
+    // Redirect /submission/ to /submissions/
+    const newPath = pathname.replace('/submission/', '/submissions/');
+    return NextResponse.redirect(new URL(newPath, request.url));
+  }
+
+  // Check if it's a protected route
   const isProtectedRoute = PROTECTED_ROUTES.some(route => 
     pathname === route || pathname.startsWith(`${route}/`)
   );
   
-  // Verificar se é uma rota pública
+  // Check if it's a public route
   const isPublicRoute = PUBLIC_ROUTES.some(route => 
     pathname === route || pathname.startsWith(`${route}/`)
   );
 
-  // Se não é nem protegida nem pública, assumir que é pública
+  // If it's neither protected nor public, assume it's public
   if (!isProtectedRoute && !isPublicRoute) {
     return NextResponse.next();
   }
 
-  // Para rotas protegidas, verificar autenticação
+  // For protected routes, check authentication
   if (isProtectedRoute) {
     const token = request.cookies.get('auth_token')?.value || 
                   request.headers.get('authorization')?.replace('Bearer ', '');
     
     if (!token) {
-      // Redirecionar para a página inicial se não autenticado
+      // Redirect to home page if not authenticated
       return NextResponse.redirect(new URL('/', request.url));
     }
   }
 
-  // Para rotas públicas, permitir acesso
-  return NextResponse.next();
+  // For public routes, allow access
+  const response = NextResponse.next();
+  
+  // Add security headers
+  response.headers.set('X-Frame-Options', 'DENY');
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('Referrer-Policy', 'origin-when-cross-origin');
+  response.headers.set(
+    'Content-Security-Policy',
+    "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:;"
+  );
+
+  return response;
 }
 
 export const config = {
@@ -57,8 +95,8 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - public files (public folder)
+     * - public folder
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|public).*)',
   ],
 }; 

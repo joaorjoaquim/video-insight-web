@@ -11,7 +11,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../core/hooks";
 import { fetchProfile, logout } from "../../core/slices/authSlice";
@@ -24,6 +24,7 @@ export default function PrivateHeader() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const pathname = usePathname();
   const dispatch = useAppDispatch();
 
   // Get user data from Redux
@@ -101,13 +102,23 @@ export default function PrivateHeader() {
         <nav className="hidden md:flex items-center gap-5 md:gap-10">
           <Link
             href="/dashboard"
-            className="text-zinc-700 dark:text-zinc-200 hover:text-indigo-600 font-medium transition-colors"
+            className={cn(
+              "font-medium transition-colors",
+              pathname === "/dashboard"
+                ? "text-indigo-600 dark:text-indigo-400"
+                : "text-zinc-700 dark:text-zinc-200 hover:text-indigo-600"
+            )}
           >
             Dashboard
           </Link>
           <Link
             href="/wallet"
-            className="flex items-center gap-1 text-zinc-700 dark:text-zinc-200 hover:text-indigo-600 font-medium transition-colors"
+            className={cn(
+              "flex items-center gap-1 font-medium transition-colors",
+              pathname === "/wallet"
+                ? "text-indigo-600 dark:text-indigo-400"
+                : "text-zinc-700 dark:text-zinc-200 hover:text-indigo-600"
+            )}
           >
             <HugeiconsIcon icon={CreditCardIcon} className="text-lg mr-1" />
             <span>{user?.credits || 0} Credits</span>
@@ -259,14 +270,24 @@ export default function PrivateHeader() {
 
             <Link
               href="/dashboard"
-              className="text-zinc-700 dark:text-zinc-200 hover:text-indigo-600 font-medium transition-colors"
+              className={cn(
+                "font-medium transition-colors",
+                pathname === "/dashboard"
+                  ? "text-indigo-600 dark:text-indigo-400"
+                  : "text-zinc-700 dark:text-zinc-200 hover:text-indigo-600"
+              )}
               onClick={() => setDrawerOpen(false)}
             >
               Dashboard
             </Link>
             <Link
               href="/wallet"
-              className="flex items-center gap-1 text-zinc-700 dark:text-zinc-200 hover:text-indigo-600 font-medium transition-colors"
+              className={cn(
+                "flex items-center gap-1 font-medium transition-colors",
+                pathname === "/wallet"
+                  ? "text-indigo-600 dark:text-indigo-400"
+                  : "text-zinc-700 dark:text-zinc-200 hover:text-indigo-600"
+              )}
               onClick={() => setDrawerOpen(false)}
             >
               <HugeiconsIcon icon={CreditCardIcon} className="text-lg mr-1" />
