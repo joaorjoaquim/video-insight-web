@@ -71,7 +71,15 @@ export const useVideoStatus = (id: string, enabled = true) => {
     queryKey: queryKeys.videoStatus(id),
     queryFn: () => videoInsightApi.getVideoStatus(id),
     enabled: enabled && !!id,
-    refetchInterval: 60000, // Poll every 1 minute for pending, downloaded, and transcribing videos
+    refetchInterval: (query) => {
+      // Stop polling if status is completed or failed
+      const data = query.state.data;
+      if (data?.status === "completed" || data?.status === "failed") {
+        return false;
+      }
+      // Poll every 10 seconds for pending, downloaded, and transcribing videos
+      return 10000;
+    },
     refetchIntervalInBackground: true,
     staleTime: 0, // Always consider data stale for status
   });

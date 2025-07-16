@@ -152,17 +152,18 @@ export function SubmissionList() {
             {filtered.length === 0 ? (
               <div className="col-span-full w-full text-center text-zinc-500 py-12">No submissions found.</div>
             ) : (
-                          filtered.map((video: any) => (
-              <div key={video.id} className="min-w-[320px] max-w-xs md:min-w-0 md:max-w-none snap-start">
-                <SubmissionCard 
-                  id={video.id}
-                  title={video.title}
-                  status={video.status as SubmissionStatus}
-                  thumbnail={video.thumbnail}
-                  createdAt={formatSubmissionDate(video.createdAt)}
-                />
-              </div>
-            ))
+              filtered.map((video: any) => (
+                <div key={video.id} className="min-w-[320px] max-w-xs md:min-w-0 md:max-w-none snap-start">
+                  <SubmissionCard 
+                    id={video.id}
+                    title={video.title}
+                    status={video.status as SubmissionStatus}
+                    thumbnail={video.thumbnail}
+                    createdAt={formatSubmissionDate(video.createdAt)}
+                    progress={video.progress}
+                  />
+                </div>
+              ))
             )}
           </div>
         </>

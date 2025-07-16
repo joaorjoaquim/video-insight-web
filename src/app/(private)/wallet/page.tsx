@@ -273,7 +273,7 @@ export default function WalletPage() {
                       Buy Credits
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-4xl w-full max-h-[95vh] overflow-y-auto">
+                  <DialogContent className="max-w-4xl lg:max-w-5xl w-full max-h-[95vh] overflow-y-auto">
                     <DialogTitle className="text-xl font-bold mb-6">
                       Credit Packages
                     </DialogTitle>
