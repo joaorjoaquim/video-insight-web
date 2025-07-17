@@ -1,8 +1,12 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "./button";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Download01Icon, Copy01Icon, Share01Icon } from "@hugeicons/core-free-icons";
+import {
+  Download01Icon,
+  Copy01Icon,
+  Share01Icon,
+} from "@hugeicons/core-free-icons";
 
 interface ActionButtonsProps {
   showDownload?: boolean;
@@ -31,19 +35,22 @@ export default function ActionButtons({
     <div className="flex gap-2">
       {showDownload && (
         <Button variant="outline" size="sm" onClick={onDownload}>
-          <HugeiconsIcon icon={Download01Icon} className="text-base mr-1" /> {downloadLabel}
+          <HugeiconsIcon icon={Download01Icon} className="text-base mr-1" />{" "}
+          {downloadLabel}
         </Button>
       )}
       {showCopy && (
         <Button variant="outline" size="sm" onClick={onCopy}>
-          <HugeiconsIcon icon={Copy01Icon} className="text-base mr-1" /> {copyLabel}
+          <HugeiconsIcon icon={Copy01Icon} className="text-base mr-1" />{" "}
+          {copyLabel}
         </Button>
       )}
       {showShare && (
         <Button variant="outline" size="sm" onClick={onShare}>
-          <HugeiconsIcon icon={Share01Icon} className="text-base mr-1" /> {shareLabel}
+          <HugeiconsIcon icon={Share01Icon} className="text-base mr-1" />{" "}
+          {shareLabel}
         </Button>
       )}
     </div>
   );
-} 
+}

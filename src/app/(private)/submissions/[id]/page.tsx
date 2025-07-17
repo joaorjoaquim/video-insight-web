@@ -26,6 +26,11 @@ import {
 import ViewToggle from "../../../../components/ui/view-toggle";
 import { useVideo } from "../../../../lib/api/hooks";
 import { formatSubmissionDate } from "../../../../lib/utils/date-formatter";
+import {
+  downloadAsPDF,
+  copyToClipboard,
+  shareContent,
+} from "../../../../lib/utils/export-utils";
 
 // Function to parse transcription string into transcript array
 const parseTranscription = (
@@ -416,7 +421,30 @@ export default function SubmissionDetailPage() {
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>Summary</CardTitle>
-                  <ActionButtons downloadLabel="Download PDF" />
+                  <ActionButtons
+                    downloadLabel="Download PDF"
+                    onDownload={() =>
+                      downloadAsPDF(
+                        "summary",
+                        transformedData,
+                        transformedData.title || "Untitled Video"
+                      )
+                    }
+                    onCopy={() =>
+                      copyToClipboard(
+                        "summary",
+                        transformedData,
+                        transformedData.title || "Untitled Video"
+                      )
+                    }
+                    onShare={() =>
+                      shareContent(
+                        "summary",
+                        transformedData,
+                        transformedData.title || "Untitled Video"
+                      )
+                    }
+                  />
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -437,7 +465,30 @@ export default function SubmissionDetailPage() {
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>Transcript</CardTitle>
-                  <ActionButtons />
+                  <ActionButtons
+                    downloadLabel="Download PDF"
+                    onDownload={() =>
+                      downloadAsPDF(
+                        "transcript",
+                        transformedData,
+                        transformedData.title || "Untitled Video"
+                      )
+                    }
+                    onCopy={() =>
+                      copyToClipboard(
+                        "transcript",
+                        transformedData,
+                        transformedData.title || "Untitled Video"
+                      )
+                    }
+                    onShare={() =>
+                      shareContent(
+                        "transcript",
+                        transformedData,
+                        transformedData.title || "Untitled Video"
+                      )
+                    }
+                  />
                 </div>
               </CardHeader>
               <CardContent>
@@ -460,7 +511,31 @@ export default function SubmissionDetailPage() {
                       setInsightView(view as "list" | "mindmap")
                     }
                   />
-                  <ActionButtons showShare={true} />
+                  <ActionButtons
+                    showShare={true}
+                    downloadLabel="Download PDF"
+                    onDownload={() =>
+                      downloadAsPDF(
+                        "insights",
+                        transformedData,
+                        transformedData.title || "Untitled Video"
+                      )
+                    }
+                    onCopy={() =>
+                      copyToClipboard(
+                        "insights",
+                        transformedData,
+                        transformedData.title || "Untitled Video"
+                      )
+                    }
+                    onShare={() =>
+                      shareContent(
+                        "insights",
+                        transformedData,
+                        transformedData.title || "Untitled Video"
+                      )
+                    }
+                  />
                 </div>
               </CardHeader>
               <CardContent>
