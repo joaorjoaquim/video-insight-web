@@ -1,8 +1,36 @@
 import jsPDF from "jspdf";
 
-// Base64 encoded logo (you can replace this with your actual logo)
-const LOGO_BASE64 =
-  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAF0WlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNy4yLWMwMDAgNzkuMWI2NWE3OWI0LCAyMDIyLzA2LzEzLTIyOjAxOjAxICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIiB4bWxuczpzdEV2dD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL3NUeXBlL1Jlc291cmNlRXZlbnQjIiB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iIHhtbG5zOnBob3Rvc2hvcD0iaHR0cDovL25zLmFkb2JlLmNvbS9waG90b3Nob3AvMS4wLyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgMjQuMCAoTWFjaW50b3NoKSIgeG1wOkNyZWF0ZURhdGU9IjIwMjQtMDMtMTlUMTU6NDc6NDUrMDE6MDAiIHhtcDpNZXRhZGF0YURhdGU9IjIwMjQtMDMtMTlUMTU6NDc6NDUrMDE6MDAiIHhtcDpNb2RpZnlEYXRlPSIyMDI0LTAzLTE5VDE1OjQ3OjQ1KzAxOjAwIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjY5ZDM4YmM1LTM4ZTAtNDZiZi1hMzBkLTNmYjQ2NzM2NzM2NyIgeG1wTU06RG9jdW1lbnRJRD0iYWRvYmU6ZG9jaWQ6cGhvdG9zaG9wOjY5ZDM4YmM1LTM4ZTAtNDZiZi1hMzBkLTNmYjQ2NzM2NzM2NyIgeG1wTU06T3JpZ2luYWxEb2N1bWVudElEPSJ4bXAuZGlkOjY5ZDM4YmM1LTM4ZTAtNDZiZi1hMzBkLTNmYjQ2NzM2NzM2NyIgZGM6Zm9ybWF0PSJpbWFnZS9wbmciIHBob3Rvc2hvcDpDb2xvck1vZGU9IjMiPiA8eG1wTU06SGlzdG9yeT4gPHJkZjpTZXE+IDxyZGY6bGkgc3RFdnQ6YWN0aW9uPSJjcmVhdGVkIiBzdEV2dDppbnN0YW5jZUlEPSJ4bXAuaWlkOjY5ZDM4YmM1LTM4ZTAtNDZiZi1hMzBkLTNmYjQ2NzM2NzM2NyIgc3RFdnQ6d2hlbj0iMjAyNC0wMy0xOVQxNTo0Nzo0NSswMTowMCIgc3RFdnQ6c29mdHdhcmVBZ2VudD0iQWRvYmUgUGhvdG9zaG9wIDI0LjAgKE1hY2ludG9zaCkiLz4gPC9yZGY6U2VxPiA8L3htcE1NOkhpc3Rvcnk+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+";
+// Simple logo placeholder - we'll create a proper logo later
+const createLogoPlaceholder = (
+  pdf: any,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+) => {
+  // Draw a rounded rectangle for the logo background
+  pdf.setFillColor(255, 255, 255, 0.95);
+  pdf.roundedRect(x, y, width, height, 4, 4, "F");
+
+  // Draw a simple icon (play button)
+  pdf.setFillColor(99, 102, 241); // Indigo color
+  pdf.circle(x + width / 2, y + height / 2, width / 3, "F");
+
+  // Draw play triangle
+  pdf.setFillColor(255, 255, 255);
+  const triangleSize = width / 5;
+  pdf.moveTo(
+    x + width / 2 - triangleSize / 2,
+    y + height / 2 - triangleSize / 2
+  );
+  pdf.lineTo(
+    x + width / 2 - triangleSize / 2,
+    y + height / 2 + triangleSize / 2
+  );
+  pdf.lineTo(x + width / 2 + triangleSize / 2, y + height / 2);
+  pdf.closePath();
+  pdf.fill();
+};
 
 // Function to add logo to PDF
 const addLogoToPDF = (
@@ -13,7 +41,8 @@ const addLogoToPDF = (
   height: number
 ) => {
   try {
-    pdf.addImage(LOGO_BASE64, "PNG", x, y, width, height);
+    // Use our custom logo placeholder
+    createLogoPlaceholder(pdf, x, y, width, height);
   } catch (error) {
     console.warn("Could not add logo to PDF:", error);
     // Fallback: draw a simple placeholder
@@ -103,16 +132,16 @@ export const downloadAsPDF = (
     pdf.rect(0, 0, pageWidth, 50, "F");
 
     // Add logo to header
-    addLogoToPDF(pdf, margin, 10, 30, 30);
+    addLogoToPDF(pdf, margin, 10, 25, 25);
 
     // App branding
     pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(24);
+    pdf.setFontSize(22);
     pdf.setFont("helvetica", "bold");
     pdf.text("Video Insights", margin + 35, 25);
 
     pdf.setTextColor(255, 255, 255, 0.8);
-    pdf.setFontSize(11);
+    pdf.setFontSize(10);
     pdf.setFont("helvetica", "normal");
     pdf.text(`Generated on: ${new Date().toLocaleString()}`, margin + 35, 35);
 
@@ -349,8 +378,9 @@ const generateTranscriptPDF = (
     pdf.setFont("helvetica", "normal");
     const textLines = pdf.splitTextToSize(item.text, maxWidth - 50);
 
+    // First line of text
     pdf.text(textLines[0], margin + 30, yPosition);
-    yPosition += 6;
+    yPosition += 8;
 
     // Additional lines if text is long
     for (let i = 1; i < textLines.length; i++) {
@@ -359,10 +389,10 @@ const generateTranscriptPDF = (
         yPosition = 20;
       }
       pdf.text(textLines[i], margin + 30, yPosition);
-      yPosition += 6;
+      yPosition += 8;
     }
 
-    yPosition += 8;
+    yPosition += 12; // More space between transcript entries
   });
 
   return yPosition;

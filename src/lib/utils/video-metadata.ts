@@ -1,4 +1,4 @@
-export type VideoPlatform = "youtube" | "vimeo" | "twitter" | "instagram" | "unknown";
+export type VideoPlatform = "youtube" | "vimeo" | "twitter" | "unknown";
 
 export interface VideoMetadata {
   platform: VideoPlatform;
@@ -48,7 +48,9 @@ function extractVimeoId(url: string): string | null {
 }
 
 async function getVimeoMetadata(url: string): Promise<VideoMetadata | null> {
-  const oembedUrl = `https://vimeo.com/api/oembed.json?url=${encodeURIComponent(url)}`;
+  const oembedUrl = `https://vimeo.com/api/oembed.json?url=${encodeURIComponent(
+    url
+  )}`;
   const res = await fetch(oembedUrl);
   if (!res.ok) return null;
   const data = await res.json();
@@ -58,7 +60,11 @@ async function getVimeoMetadata(url: string): Promise<VideoMetadata | null> {
     title: data.title,
     thumbnail: data.thumbnail_url,
     channel: data.author_name,
-    duration: data.duration ? `${Math.floor(data.duration/60)}:${String(data.duration%60).padStart(2,"0")}` : undefined,
+    duration: data.duration
+      ? `${Math.floor(data.duration / 60)}:${String(
+          data.duration % 60
+        ).padStart(2, "0")}`
+      : undefined,
   };
 }
 
@@ -68,7 +74,9 @@ function isTwitterUrl(url: string) {
 }
 
 async function getTwitterMetadata(url: string): Promise<VideoMetadata | null> {
-  const oembedUrl = `https://publish.twitter.com/oembed?url=${encodeURIComponent(url)}`;
+  const oembedUrl = `https://publish.twitter.com/oembed?url=${encodeURIComponent(
+    url
+  )}`;
   const res = await fetch(oembedUrl);
   if (!res.ok) return null;
   const data = await res.json();
@@ -81,44 +89,25 @@ async function getTwitterMetadata(url: string): Promise<VideoMetadata | null> {
   };
 }
 
-// --- Instagram ---
-function isInstagramUrl(url: string) {
-  return /instagram\.com\//.test(url);
-}
-
-async function getInstagramMetadata(url: string): Promise<VideoMetadata | null> {
-  const oembedUrl = `https://api.instagram.com/oembed?url=${encodeURIComponent(url)}`;
-  const res = await fetch(oembedUrl);
-  if (!res.ok) return null;
-  const data = await res.json();
-  return {
-    platform: "instagram",
-    url,
-    title: data.title || "Instagram Post",
-    thumbnail: data.thumbnail_url,
-    channel: data.author_name,
-  };
-}
-
 // --- Detect Platform ---
 export function detectPlatform(url: string): VideoPlatform {
   if (extractYouTubeId(url)) return "youtube";
   if (extractVimeoId(url)) return "vimeo";
   if (isTwitterUrl(url)) return "twitter";
-  if (isInstagramUrl(url)) return "instagram";
   return "unknown";
 }
 
 // --- Main Entrypoint ---
-export async function getVideoMetadata(url: string): Promise<VideoMetadata | null> {
+export async function getVideoMetadata(
+  url: string
+): Promise<VideoMetadata | null> {
   const platform = detectPlatform(url);
   if (platform === "youtube") return getYouTubeMetadata(url);
   if (platform === "vimeo") return getVimeoMetadata(url);
   if (platform === "twitter") return getTwitterMetadata(url);
-  if (platform === "instagram") return getInstagramMetadata(url);
   return null;
 }
 
 export function isValidVideoUrl(url: string): boolean {
   return detectPlatform(url) !== "unknown";
-} 
+}
