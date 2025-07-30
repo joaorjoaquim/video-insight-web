@@ -434,6 +434,8 @@ export default function WalletPage() {
                           {getActivityDescription(transaction)}
                         </div>
                         <div className="text-sm text-zinc-500">
+                          {transaction.video?.title &&
+                            transaction.video?.title + ` - `}
                           {formatActivityDate(transaction.createdAt)}
                         </div>
                       </div>

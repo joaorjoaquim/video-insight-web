@@ -22,6 +22,13 @@ export interface User {
   updatedAt: string;
 }
 
+export interface Video {
+  id: number;
+  title: string;
+  duration: number;
+  status: string;
+}
+
 export interface Transaction {
   id: number;
   amount: number;
@@ -33,6 +40,7 @@ export interface Transaction {
   referenceId: string;
   referenceType: string;
   tokensUsed: number;
+  video?: Video;
 }
 
 export interface CreditsResponse {
