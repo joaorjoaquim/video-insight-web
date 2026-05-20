@@ -88,3 +88,40 @@ export const getCredits = async (): Promise<CreditsResponse> => {
   const response = await api.get("/credits");
   return response.data;
 };
+
+export interface RedeemPromoResponse {
+  credits: number;
+  coinsAdded: number;
+  message: string;
+}
+
+export const redeemPromoCode = async (code: string): Promise<RedeemPromoResponse> => {
+  const response = await api.post("/credits/redeem", { code: code.trim().toUpperCase() });
+  return response.data;
+};
+
+export interface ClaimGithubResponse {
+  credits: number;
+  coinsAdded: number;
+  message: string;
+}
+
+export const claimGithubCredits = async (
+  githubUsername: string,
+  action: "star" | "fork"
+): Promise<ClaimGithubResponse> => {
+  const response = await api.post("/credits/claim/github", { githubUsername, action });
+  return response.data;
+};
+
+export interface ReferralInfo {
+  referralCode: string;
+  referralUrl: string;
+  referralsCount: number;
+  creditsEarned: number;
+}
+
+export const getReferralInfo = async (): Promise<ReferralInfo> => {
+  const response = await api.get("/user/referral");
+  return response.data;
+};

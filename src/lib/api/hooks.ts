@@ -122,7 +122,43 @@ export const useCredits = () => {
   return useQuery({
     queryKey: ["credits"],
     queryFn: () => getCredits(),
-    staleTime: 30 * 1000, // 30 seconds
+    staleTime: 30 * 1000,
     refetchOnWindowFocus: true,
+  });
+};
+
+import {
+  redeemPromoCode,
+  claimGithubCredits,
+  getReferralInfo,
+} from "./authApi";
+
+export const useRedeemPromoCode = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (code: string) => redeemPromoCode(code),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["credits"] });
+    },
+  });
+};
+
+export const useClaimGithubCredits = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ githubUsername, action }: { githubUsername: string; action: "star" | "fork" }) =>
+      claimGithubCredits(githubUsername, action),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["credits"] });
+    },
+  });
+};
+
+export const useReferralInfo = () => {
+  return useQuery({
+    queryKey: ["referral"],
+    queryFn: () => getReferralInfo(),
+    staleTime: 5 * 60 * 1000,
+    retry: false,
   });
 };

@@ -14,7 +14,9 @@ import { formatSubmissionDate } from "../../../../lib/utils/date-formatter";
 import { formatDuration } from "../../../../lib/utils";
 import {
   downloadAsPDF,
+  downloadFullReportPDF,
   copyToClipboard,
+  copyFullReport,
   shareContent,
 } from "../../../../lib/utils/export-utils";
 import { useT } from "../../../../lib/i18n";
@@ -102,9 +104,22 @@ export default function SubmissionDetailPage() {
 
   if (!video) return null;
 
+  const rawMetrics = video.summary?.metrics || [];
+  const resolvedMetrics = rawMetrics.map((m: { label: string; value: string }) => {
+    if (
+      m.label.toLowerCase() === "duration" &&
+      (m.value === "N/A" || !m.value) &&
+      typeof video.duration === "number" &&
+      video.duration > 0
+    ) {
+      return { ...m, value: formatDuration(video.duration) };
+    }
+    return m;
+  });
+
   const transformedData = {
     ...video,
-    summary:    { text: video.summary?.text || "", metrics: video.summary?.metrics || [], topics: video.summary?.topics || [] },
+    summary:    { text: video.summary?.text || "", metrics: resolvedMetrics, topics: video.summary?.topics || [] },
     transcript: video.transcript || parseTranscription(video.transcription || "", video.duration || 0),
     insights:   { chips: video.insights?.chips || [], sections: video.insights?.sections || [] },
     mindMap:    video.mindMap || { root: "Video Insights", branches: [] },
@@ -140,7 +155,7 @@ export default function SubmissionDetailPage() {
             >
               {titleLead}{titleLead && " "}<span className="ital-bar">{titleTail}</span>
             </h1>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-5">
               <span className="br-eyebrow">{transformedData.platform || "YouTube"}</span>
               <span className="text-[var(--rule)]">·</span>
               <span className="br-eyebrow">{t("detail.runtime")} {durationDisplay}</span>
@@ -152,6 +167,14 @@ export default function SubmissionDetailPage() {
               <span className="text-[var(--rule)]">·</span>
               <span className="led completed">completed</span>
             </div>
+            <ActionButtons
+              downloadLabel={t("detail.downloadReport")}
+              copyLabel={t("detail.copyAll")}
+              showShare
+              onDownload={() => downloadFullReportPDF(transformedData, transformedData.title || "Untitled")}
+              onCopy={() => copyFullReport(transformedData, transformedData.title || "Untitled")}
+              onShare={() => shareContent("summary", transformedData, transformedData.title || "Untitled")}
+            />
           </section>
         </Reveal>
 
@@ -184,10 +207,10 @@ export default function SubmissionDetailPage() {
                 <div className="flex justify-between items-center mb-5">
                   <span className="br-eyebrow">{t("detail.summary.section")}</span>
                   <ActionButtons
-                    downloadLabel="PDF"
-                    onDownload={() => downloadAsPDF("summary", transformedData, transformedData.title || "Untitled")}
+                    showDownload={false}
+                    showShare={false}
+                    copyLabel={t("detail.copySummary")}
                     onCopy={() => copyToClipboard("summary", transformedData, transformedData.title || "Untitled")}
-                    onShare={() => shareContent("summary", transformedData, transformedData.title || "Untitled")}
                   />
                 </div>
                 <div className="text-[var(--ink-1)] leading-[1.75] text-[15px] whitespace-pre-line max-w-[38rem]">
@@ -218,10 +241,10 @@ export default function SubmissionDetailPage() {
             <div className="flex justify-between items-center mb-6">
               <span className="br-eyebrow">{t("detail.transcript.label")} · {transformedData.transcript?.length || 0} {t("detail.transcript.segments")}</span>
               <ActionButtons
-                downloadLabel="PDF"
-                onDownload={() => downloadAsPDF("transcript", transformedData, transformedData.title || "Untitled")}
+                showDownload={false}
+                showShare={false}
+                copyLabel={t("detail.copyTranscript")}
                 onCopy={() => copyToClipboard("transcript", transformedData, transformedData.title || "Untitled")}
-                onShare={() => shareContent("transcript", transformedData, transformedData.title || "Untitled")}
               />
             </div>
             <div className="max-w-2xl">
@@ -249,11 +272,10 @@ export default function SubmissionDetailPage() {
                 ))}
               </div>
               <ActionButtons
-                showShare
-                downloadLabel="PDF"
-                onDownload={() => downloadAsPDF("insights", transformedData, transformedData.title || "Untitled")}
+                showDownload={false}
+                showShare={false}
+                copyLabel={t("detail.copyInsights")}
                 onCopy={() => copyToClipboard("insights", transformedData, transformedData.title || "Untitled")}
-                onShare={() => shareContent("insights", transformedData, transformedData.title || "Untitled")}
               />
             </div>
             {insightView === "list" ? (

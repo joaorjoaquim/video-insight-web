@@ -1,6 +1,5 @@
 "use client";
 import React from "react";
-import { Button } from "./button";
 
 interface ViewToggleProps {
   currentView: string;
@@ -10,17 +9,25 @@ interface ViewToggleProps {
 
 export default function ViewToggle({ currentView, views, onViewChange }: ViewToggleProps) {
   return (
-    <div className="flex gap-2">
-      {views.map((view) => (
-        <Button
-          key={view.value}
-          variant={currentView === view.value ? "default" : "outline"}
-          size="sm"
-          onClick={() => onViewChange(view.value)}
-        >
-          {view.label}
-        </Button>
-      ))}
+    <div className="flex gap-0 border border-[var(--rule)] rounded-[6px] overflow-hidden">
+      {views.map((view) => {
+        const isActive = currentView === view.value;
+        return (
+          <button
+            key={view.value}
+            type="button"
+            onClick={() => onViewChange(view.value)}
+            className={`px-3 py-1.5 text-[11px] font-medium tracking-[0.08em] uppercase transition-colors ${
+              isActive
+                ? "bg-[var(--bars)] text-white"
+                : "bg-transparent text-[var(--ink-2)] hover:text-[var(--ink-1)] hover:bg-[var(--rule-soft)]"
+            }`}
+            style={{ fontFamily: "var(--font-mono-br, monospace)" }}
+          >
+            {view.label}
+          </button>
+        );
+      })}
     </div>
   );
-} 
+}

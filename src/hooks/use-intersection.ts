@@ -18,19 +18,27 @@ export function useIntersection<T extends Element = HTMLDivElement>({
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true);
-          if (once) observer.disconnect();
-        } else if (!once) {
-          setVisible(false);
-        }
-      },
-      { threshold, rootMargin }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
+    let observer: IntersectionObserver;
+    // Delay ensures browser paints opacity:0 state before observer fires,
+    // making the reveal animation actually visible on page load.
+    const timer = setTimeout(() => {
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            setVisible(true);
+            if (once) observer.disconnect();
+          } else if (!once) {
+            setVisible(false);
+          }
+        },
+        { threshold, rootMargin }
+      );
+      observer.observe(el);
+    }, 120);
+    return () => {
+      clearTimeout(timer);
+      observer?.disconnect();
+    };
   }, [threshold, rootMargin, once]);
 
   return { ref, visible };

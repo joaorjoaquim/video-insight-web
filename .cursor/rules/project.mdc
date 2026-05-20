@@ -1,0 +1,85 @@
+---
+description: SummaryVideos project context — architecture, components, API, bugs
+globs: ["**/*.ts", "**/*.tsx", "**/*.css"]
+alwaysApply: true
+---
+
+# SummaryVideos — Cursor Project Rules
+
+## App Overview
+Next.js 15 + React 19 SaaS app. Users submit public video URLs → AI generates summary, timestamped transcript, insights, mind map. Credits consumed per video. Production: https://summaryvideos.com
+
+## Stack
+- Next.js 15 App Router + Turbopack
+- Redux Toolkit (client state) + TanStack Query v5 (server state)
+- Tailwind CSS v4 OKLCH tokens + shadcn/ui pattern
+- Radix UI primitives (Dialog, Accordion, Tabs, Label, Slot)
+- @hugeicons/react + @hugeicons/core-free-icons (icon library)
+- Axios with Bearer token interceptor
+- jsPDF for export, dayjs for dates
+
+## Route Map
+| Route | Description |
+|---|---|
+| `/` | Landing page → redirects to /dashboard if authed |
+| `/dashboard` | URL form + submissions grid + FAQ |
+| `/wallet` | Credits balance + transaction history |
+| `/submissions/[id]` | Summary / Transcript / Insights tabs |
+| `/auth/callback` | OAuth token handler |
+
+## State
+- **Redux store:** `auth` (user, token, isAuthenticated, isLoading, error) + `dialog` (isOpen, mode)
+- **TanStack Query:** `["videos"]`, `["video", id]`, `["video-status", id]` (polls 10s), `["credits"]`
+- Token stored in `localStorage` + cookie (`auth_token`)
+
+## API
+Base URL from `NEXT_PUBLIC_API_BASE_URL`. Interceptor adds `Authorization: Bearer <token>`. 401 → clears token + redirects to `/`.
+
+Key endpoints:
+- `POST /auth/login` → `{ user, token }`
+- `GET /video` → `{ videos: Submission[] }`
+- `POST /video` → submits URL
+- `GET /video/:id` → full video detail
+- `GET /video/:id/status` → polling
+- `GET /credits` → balance + transactions
+
+## Key Files
+- State: `src/core/store.ts`, `src/core/slices/authSlice.ts`, `src/core/slices/dialogSlice.ts`
+- Providers: `src/core/providers/GlobalProvider.tsx` (Redux + Query + AuthInitializer)
+- API: `src/lib/api/axios.ts`, `src/lib/api/hooks.ts`, `src/lib/api/videoInsightApi.ts`
+- Utils: `src/lib/utils.ts` (cn, formatDuration), `src/lib/utils/export-utils.ts`
+- Design tokens: `src/app/globals.css`
+
+## Component Conventions
+- All pages/components are `"use client"`
+- Use `cn()` from `src/lib/utils.ts` for conditional classes
+- Use `useAppSelector` / `useAppDispatch` from `src/core/hooks.ts`
+- Use existing shadcn UI primitives in `src/components/ui/` before creating new ones
+- Icons: always use `@hugeicons/react` (`HugeiconsIcon`) + `@hugeicons/core-free-icons` — not `lucide-react` or `hugeicons-react` (legacy)
+- Duration formatting: `formatDuration(seconds)` from `src/lib/utils.ts`
+- Date formatting: `formatSubmissionDate(iso)` from `src/lib/utils/date-formatter.ts`
+
+## Design System
+- Primary: indigo/purple (`text-indigo-600`, `bg-indigo-500`, `#7E1DFD`)
+- Brand gradient: `from-[#F2A240] via-[#af65ab] to-[#7E1DFD]`
+- Background: `from-[#f8f6fc] to-white` (light), `from-zinc-950 to-zinc-900` (dark)
+- Cards/surfaces: `bg-white dark:bg-zinc-900`, bordered with `border-zinc-200 dark:border-zinc-800`
+- Text: `text-zinc-900 dark:text-zinc-100` (primary), `text-zinc-500` (muted)
+- Radius: `rounded-lg` (cards), `rounded-md` (buttons/inputs)
+- Max widths: `max-w-7xl` (nav), `max-w-5xl` (dashboard), `max-w-4xl` (detail), `max-w-6xl` (wallet)
+
+## Known Bugs — Do Not Regress
+1. **Dark mode broken**: Theme toggle in `private-header.tsx` only updates local state, never touches `document.documentElement.classList`. All `dark:` classes are non-functional.
+2. **Emoji mojibake in insights**: `section.icon` in `insights-list.tsx` renders as garbled UTF-8 (e.g. `ðŸ'¡`). Encoding issue from API.
+3. **Wallet pagination fake**: Page buttons hardcoded, no offset passed to API.
+4. **OAuth callback wrong redirect**: `/auth/callback` redirects errors to `/public` (doesn't exist) instead of `/`.
+5. **Summary Duration metric N/A**: API sends N/A for duration in summary.metrics even when `video.duration` is available.
+6. **No auth middleware**: `(private)` route group has passthrough layout — no server-side auth guard.
+7. **Dead code**: `setAuthDialogState` reducer in `authSlice.ts`, `exampleSlice.ts` not in store, `hugeicons-react` legacy package unused.
+8. **AuthDialog uses custom modal**: Should use `src/components/ui/dialog.tsx` (Radix) instead of manual fixed overlay.
+
+## Submission Flow
+URL paste → 1s debounce → oEmbed fetch → VideoPreview → "Process Video" → POST /video → optimistic update → SubmissionCard polls /video/:id/status every 10s → "completed" → View Details → /submissions/:id
+
+## Video Status Lifecycle
+`pending` → `downloaded` → `transcribing` → `completed` | `failed`

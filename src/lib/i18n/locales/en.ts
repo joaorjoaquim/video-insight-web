@@ -177,6 +177,39 @@ export const en = {
 
   // Scroll to top
   'scrollTop.label': 'Back to top',
+
+  // Earn Credits section (wallet)
+  'wallet.earn.section': 'Earn Credits',
+  'wallet.earn.headline': 'Grow your',
+  'wallet.earn.headlineAccent': 'balance.',
+  'wallet.earn.promo.title': 'Promo Code',
+  'wallet.earn.promo.sub': 'Have a code? Redeem it for free credits.',
+  'wallet.earn.promo.placeholder': 'LAUNCH50',
+  'wallet.earn.promo.button': 'Redeem',
+  'wallet.earn.promo.redeeming': 'Redeeming…',
+  'wallet.earn.promo.success': 'credits added!',
+  'wallet.earn.promo.error': 'Invalid or expired code.',
+  'wallet.earn.github.title': 'GitHub',
+  'wallet.earn.github.sub': 'Star or fork our open-source repo and claim free credits.',
+  'wallet.earn.github.placeholder': 'your-github-username',
+  'wallet.earn.github.star': '⭐ Star (+5 cr)',
+  'wallet.earn.github.fork': 'Fork (+10 cr)',
+  'wallet.earn.github.claimed': 'Claimed',
+  'wallet.earn.github.link': 'View repo →',
+  'wallet.earn.github.error': 'Username not found or action not verified.',
+  'wallet.earn.referral.title': 'Refer a Friend',
+  'wallet.earn.referral.sub': 'Share your link. They get 10 bonus credits on signup. You get 5 when they process their first video.',
+  'wallet.earn.referral.copy': 'Copy Link',
+  'wallet.earn.referral.copied': 'Copied!',
+  'wallet.earn.referral.stats': 'referrals · credits earned',
+  'wallet.earn.referral.loading': 'Generating your link…',
+
+  // Detail page export actions
+  'detail.downloadReport': 'Full Report',
+  'detail.copyAll': 'Copy All',
+  'detail.copySummary': 'Copy Summary',
+  'detail.copyTranscript': 'Copy Transcript',
+  'detail.copyInsights': 'Copy Insights',
 };
 
 export type TranslationKey = keyof typeof en;

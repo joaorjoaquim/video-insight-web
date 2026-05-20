@@ -72,17 +72,19 @@ export function SubmissionCard({ id, title, status, thumbnail, createdAt, progre
         )}
 
         {/* Footer row */}
-        <div className="flex items-center justify-between mt-auto pt-3 border-t border-[var(--rule)]">
-          <span className={`led ${currentStatus}`}>{currentStatus}</span>
-          {isCompleted && (
-            <Link href={`/submissions/${id}`}>
-              <button className="br-eyebrow border border-[var(--ink-1)] dark:border-zinc-600 px-3 py-1.5 rounded-[4px] hover:bg-[var(--ink-1)] hover:text-[var(--briefing-bg)] transition-colors">
-                {t("card.view")}
-              </button>
-            </Link>
-          )}
+        <div className="mt-auto pt-3 border-t border-[var(--rule)]">
+          <div className="flex items-center justify-between">
+            <span className={`led ${currentStatus}`}>{currentStatus}</span>
+            {isCompleted && (
+              <Link href={`/submissions/${id}`}>
+                <button className="br-eyebrow border border-[var(--ink-1)] dark:border-zinc-600 px-3 py-1.5 rounded-[4px] hover:bg-[var(--ink-1)] hover:text-[var(--briefing-bg)] transition-colors">
+                  {t("card.view")}
+                </button>
+              </Link>
+            )}
+          </div>
           {isFailed && (
-            <span className="br-eyebrow text-[var(--led-failed)]">{t("card.creditsRefunded")}</span>
+            <p className="br-eyebrow text-[var(--led-failed)] mt-1.5">{t("card.creditsRefunded")}</p>
           )}
         </div>
       </div>

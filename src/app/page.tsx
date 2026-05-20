@@ -61,7 +61,7 @@ function LandingPage() {
               onClick={() => setLocale(locale === 'en' ? 'pt-br' : 'en')}
               className="font-[var(--font-mono-br,monospace)] text-[11px] font-medium tracking-[0.12em] uppercase text-[var(--ink-2)] hover:text-[var(--play)] border border-[var(--rule)] rounded px-1.5 py-0.5 transition-colors"
             >
-              {t('lang.toggle')}
+              {t('lang.current')}
             </button>
             <button
               onClick={open}

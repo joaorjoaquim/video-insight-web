@@ -7,9 +7,10 @@ import {
   DialogTitle,
 } from "../../../components/ui/dialog";
 import { useAppSelector } from "../../../core/hooks";
-import { useCredits } from "../../../lib/api/hooks";
+import { useCredits, useRedeemPromoCode, useClaimGithubCredits, useReferralInfo } from "../../../lib/api/hooks";
 import { useT } from "../../../lib/i18n";
 import { Reveal } from "../../../components/ui/reveal";
+import { CustomSelect } from "../../../components/ui/custom-select";
 
 const creditPackages = [
   { id: "starter",    name: "STARTER",    amount: 10,  price: 9.90,  per: 0.99 },
@@ -18,6 +19,8 @@ const creditPackages = [
   { id: "enterprise", name: "ENTERPRISE", amount: 100, price: 59.00, per: 0.59 },
 ];
 
+const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+
 export default function WalletPage() {
   const t = useT();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -25,8 +28,18 @@ export default function WalletPage() {
   const [filterType, setFilterType] = useState("all");
   const [filterPeriod, setFilterPeriod] = useState("30days");
 
+  // Earn credits state
+  const [promoCode, setPromoCode] = useState("");
+  const [promoResult, setPromoResult] = useState<{ ok: boolean; msg: string } | null>(null);
+  const [githubUsername, setGithubUsername] = useState("");
+  const [githubError, setGithubError] = useState<string | null>(null);
+  const [referralCopied, setReferralCopied] = useState(false);
+
   const { user } = useAppSelector((state: any) => state.auth);
   const { data: creditsData, isLoading, error } = useCredits();
+  const redeemMutation = useRedeemPromoCode();
+  const claimGithubMutation = useClaimGithubCredits();
+  const { data: referralData, isLoading: referralLoading } = useReferralInfo();
 
   const credits = creditsData?.credits ?? user?.credits ?? 0;
   const transactions = creditsData?.transactions || [];
@@ -60,6 +73,35 @@ export default function WalletPage() {
     try {
       return new Date(dateString).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
     } catch { return ""; }
+  };
+
+  const handleRedeemPromo = async () => {
+    if (!promoCode.trim()) return;
+    setPromoResult(null);
+    try {
+      const res = await redeemMutation.mutateAsync(promoCode);
+      setPromoResult({ ok: true, msg: `+${res.coinsAdded} ${t("wallet.earn.promo.success")}` });
+      setPromoCode("");
+    } catch {
+      setPromoResult({ ok: false, msg: t("wallet.earn.promo.error") });
+    }
+  };
+
+  const handleClaimGithub = async (action: "star" | "fork") => {
+    if (!githubUsername.trim()) return;
+    setGithubError(null);
+    try {
+      await claimGithubMutation.mutateAsync({ githubUsername: githubUsername.trim(), action });
+    } catch {
+      setGithubError(t("wallet.earn.github.error"));
+    }
+  };
+
+  const handleCopyReferral = () => {
+    const url = referralData?.referralUrl ?? `https://summaryvideos.com/?ref=${user?.id}`;
+    navigator.clipboard?.writeText(url);
+    setReferralCopied(true);
+    setTimeout(() => setReferralCopied(false), 2000);
   };
 
   const typeColor = (amount: number) =>
@@ -142,26 +184,24 @@ export default function WalletPage() {
                   {t("wallet.ledger.headline")}
                 </h2>
                 <div className="flex gap-2">
-                  <select
+                  <CustomSelect
                     value={filterType}
-                    onChange={(e) => setFilterType(e.target.value)}
-                    className="border border-[var(--rule)] rounded-[6px] px-3 py-1.5 text-[11px] tracking-[0.1em] bg-white dark:bg-zinc-900 text-[var(--ink-2)] focus:outline-none"
-                    style={{ fontFamily: "var(--font-mono-br, monospace)" }}
-                  >
-                    <option value="all">{t("wallet.ledger.allTypes")}</option>
-                    <option value="spend">{t("wallet.ledger.spent")}</option>
-                    <option value="purchase">{t("wallet.ledger.purchased")}</option>
-                    <option value="refund">{t("wallet.ledger.refunded")}</option>
-                  </select>
-                  <select
+                    onChange={setFilterType}
+                    options={[
+                      { value: "all",      label: t("wallet.ledger.allTypes") },
+                      { value: "spend",    label: t("wallet.ledger.spent") },
+                      { value: "purchase", label: t("wallet.ledger.purchased") },
+                      { value: "refund",   label: t("wallet.ledger.refunded") },
+                    ]}
+                  />
+                  <CustomSelect
                     value={filterPeriod}
-                    onChange={(e) => setFilterPeriod(e.target.value)}
-                    className="border border-[var(--rule)] rounded-[6px] px-3 py-1.5 text-[11px] tracking-[0.1em] bg-white dark:bg-zinc-900 text-[var(--ink-2)] focus:outline-none"
-                    style={{ fontFamily: "var(--font-mono-br, monospace)" }}
-                  >
-                    <option value="all">{t("wallet.ledger.allTime")}</option>
-                    <option value="30days">{t("wallet.ledger.last30")}</option>
-                  </select>
+                    onChange={setFilterPeriod}
+                    options={[
+                      { value: "all",    label: t("wallet.ledger.allTime") },
+                      { value: "30days", label: t("wallet.ledger.last30") },
+                    ]}
+                  />
                 </div>
               </div>
 
@@ -216,6 +256,141 @@ export default function WalletPage() {
             </div>
           </section>
         </Reveal>
+
+        <hr className="border-[var(--rule)] mb-14 mt-14" />
+
+        {/* § 03 Earn Credits */}
+        <Reveal delay={2}>
+          <section className="grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-8 pb-24">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <span className="logo-bars"><i/><i/><i/></span>
+                <span className="br-eyebrow">§ 03</span>
+              </div>
+              <div className="br-eyebrow">{t("wallet.earn.section")}</div>
+            </div>
+            <div>
+              <h2
+                style={{ fontFamily: "var(--font-display-br, Georgia, serif)", fontSize: "1.4rem", letterSpacing: "-0.01em" }}
+                className="text-[var(--ink-1)] mb-6"
+              >
+                {t("wallet.earn.headline")} <span className="ital-bar">{t("wallet.earn.headlineAccent")}</span>
+              </h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                {/* Promo Code */}
+                <div className="border border-[var(--rule)] rounded-[10px] p-5 bg-white dark:bg-zinc-900 flex flex-col gap-3">
+                  <div>
+                    <div className="br-eyebrow mb-1">{t("wallet.earn.promo.title")}</div>
+                    <p className="text-[var(--ink-2)] text-xs leading-relaxed">{t("wallet.earn.promo.sub")}</p>
+                  </div>
+                  <input
+                    value={promoCode}
+                    onChange={(e) => { setPromoCode(e.target.value.toUpperCase()); setPromoResult(null); }}
+                    onKeyDown={(e) => e.key === "Enter" && handleRedeemPromo()}
+                    placeholder={t("wallet.earn.promo.placeholder")}
+                    className="border border-[var(--rule)] rounded-[6px] px-3 py-2 text-sm bg-white dark:bg-zinc-900 text-[var(--ink-1)] placeholder:text-[var(--ink-3)] focus:outline-none focus:border-[var(--bars)] transition-colors"
+                    style={{ fontFamily: "var(--font-mono-br, monospace)" }}
+                  />
+                  {promoResult && (
+                    <p className={`text-xs ${promoResult.ok ? "text-[var(--led-completed)]" : "text-[var(--led-failed)]"}`}>
+                      {promoResult.msg}
+                    </p>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleRedeemPromo}
+                    disabled={!promoCode.trim() || redeemMutation.isPending}
+                    className="mt-auto px-4 py-2 text-sm font-semibold bg-[var(--play)] hover:bg-[var(--play-700)] disabled:opacity-40 text-white rounded-[6px] transition-colors"
+                  >
+                    {redeemMutation.isPending ? t("wallet.earn.promo.redeeming") : t("wallet.earn.promo.button")}
+                  </button>
+                </div>
+
+                {/* GitHub */}
+                <div className="border border-[var(--rule)] rounded-[10px] p-5 bg-white dark:bg-zinc-900 flex flex-col gap-3">
+                  <div>
+                    <div className="br-eyebrow mb-1">{t("wallet.earn.github.title")}</div>
+                    <p className="text-[var(--ink-2)] text-xs leading-relaxed">{t("wallet.earn.github.sub")}</p>
+                  </div>
+                  <input
+                    value={githubUsername}
+                    onChange={(e) => { setGithubUsername(e.target.value); setGithubError(null); }}
+                    placeholder={t("wallet.earn.github.placeholder")}
+                    className="border border-[var(--rule)] rounded-[6px] px-3 py-2 text-sm bg-white dark:bg-zinc-900 text-[var(--ink-1)] placeholder:text-[var(--ink-3)] focus:outline-none focus:border-[var(--bars)] transition-colors"
+                  />
+                  {githubError && <p className="text-xs text-[var(--led-failed)]">{githubError}</p>}
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleClaimGithub("star")}
+                      disabled={!githubUsername.trim() || claimGithubMutation.isPending}
+                      className="flex-1 px-3 py-1.5 text-[11px] font-medium border border-[var(--rule)] rounded-[4px] hover:border-[var(--bars)] hover:text-[var(--bars)] disabled:opacity-40 transition-colors"
+                      style={{ fontFamily: "var(--font-mono-br, monospace)" }}
+                    >
+                      {t("wallet.earn.github.star")}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleClaimGithub("fork")}
+                      disabled={!githubUsername.trim() || claimGithubMutation.isPending}
+                      className="flex-1 px-3 py-1.5 text-[11px] font-medium border border-[var(--rule)] rounded-[4px] hover:border-[var(--bars)] hover:text-[var(--bars)] disabled:opacity-40 transition-colors"
+                      style={{ fontFamily: "var(--font-mono-br, monospace)" }}
+                    >
+                      {t("wallet.earn.github.fork")}
+                    </button>
+                  </div>
+                  <a
+                    href="https://github.com/joaorjoaquim/video-insight-web"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="br-eyebrow hover:text-[var(--bars)] transition-colors mt-auto"
+                  >
+                    {t("wallet.earn.github.link")}
+                  </a>
+                </div>
+
+                {/* Referral */}
+                <div className="border border-[var(--rule)] rounded-[10px] p-5 bg-white dark:bg-zinc-900 flex flex-col gap-3">
+                  <div>
+                    <div className="br-eyebrow mb-1">{t("wallet.earn.referral.title")}</div>
+                    <p className="text-[var(--ink-2)] text-xs leading-relaxed">{t("wallet.earn.referral.sub")}</p>
+                  </div>
+                  {referralLoading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="bars-loader scale-75 origin-left"><i/><i/><i/><i/></div>
+                      <span className="br-eyebrow">{t("wallet.earn.referral.loading")}</span>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="border border-[var(--rule)] rounded-[6px] px-3 py-2 text-xs text-[var(--ink-3)] truncate bg-[var(--rule-soft)]" style={{ fontFamily: "var(--font-mono-br, monospace)" }}>
+                        {referralData?.referralUrl ?? `summaryvideos.com/?ref=${user?.id ?? "…"}`}
+                      </div>
+                      {referralData && (
+                        <div className="br-eyebrow">
+                          {referralData.referralsCount} {t("wallet.earn.referral.stats").split("·")[0].trim()} · {referralData.creditsEarned} {t("wallet.earn.referral.stats").split("·")[1]?.trim()}
+                        </div>
+                      )}
+                    </>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleCopyReferral}
+                    className={`mt-auto px-4 py-2 text-sm font-semibold rounded-[6px] transition-colors border ${
+                      referralCopied
+                        ? "border-[var(--bars)] text-[var(--bars)]"
+                        : "border-[var(--rule)] text-[var(--ink-2)] hover:border-[var(--ink-2)] hover:text-[var(--ink-1)]"
+                    }`}
+                  >
+                    {referralCopied ? t("wallet.earn.referral.copied") : t("wallet.earn.referral.copy")}
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          </section>
+        </Reveal>
       </main>
 
       {/* Buy credits dialog */}
@@ -254,15 +429,16 @@ export default function WalletPage() {
                   {pkg.amount}
                   <small className="text-xs ml-1" style={{ fontFamily: "var(--font-sans-br)" }}>cr</small>
                 </div>
-                <div className="br-eyebrow">${pkg.per.toFixed(2)}{t("wallet.modal.perCredit")}</div>
+                <div className="br-eyebrow">{usd.format(pkg.per)}{t("wallet.modal.perCredit")}</div>
                 <div className="mt-auto pt-2 border-t border-[var(--rule)]">
-                  <div style={{ fontFamily: "var(--font-display-br, Georgia, serif)", fontSize: "1.2rem" }} className="text-[var(--ink-1)]">${pkg.price.toFixed(2)}</div>
+                  <div style={{ fontFamily: "var(--font-display-br, Georgia, serif)", fontSize: "1.2rem" }} className="text-[var(--ink-1)]">{usd.format(pkg.price)}</div>
                 </div>
               </button>
             ))}
           </div>
 
           <button
+            type="button"
             disabled={!selected}
             className="w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold bg-[var(--play)] hover:bg-[var(--play-700)] disabled:opacity-40 text-white rounded-[6px] transition-colors"
             onClick={() => setDialogOpen(false)}

@@ -177,4 +177,37 @@ export const ptBr = {
 
   // Scroll to top
   'scrollTop.label': 'Voltar ao topo',
+
+  // Earn Credits section (wallet)
+  'wallet.earn.section': 'Ganhar Créditos',
+  'wallet.earn.headline': 'Aumente seu',
+  'wallet.earn.headlineAccent': 'saldo.',
+  'wallet.earn.promo.title': 'Código Promocional',
+  'wallet.earn.promo.sub': 'Tem um código? Resgate por créditos grátis.',
+  'wallet.earn.promo.placeholder': 'LAUNCH50',
+  'wallet.earn.promo.button': 'Resgatar',
+  'wallet.earn.promo.redeeming': 'Resgatando…',
+  'wallet.earn.promo.success': 'créditos adicionados!',
+  'wallet.earn.promo.error': 'Código inválido ou expirado.',
+  'wallet.earn.github.title': 'GitHub',
+  'wallet.earn.github.sub': 'Dê uma estrela ou faça fork do nosso repo e ganhe créditos grátis.',
+  'wallet.earn.github.placeholder': 'seu-usuario-github',
+  'wallet.earn.github.star': '⭐ Star (+5 cr)',
+  'wallet.earn.github.fork': 'Fork (+10 cr)',
+  'wallet.earn.github.claimed': 'Resgatado',
+  'wallet.earn.github.link': 'Ver repo →',
+  'wallet.earn.github.error': 'Usuário não encontrado ou ação não verificada.',
+  'wallet.earn.referral.title': 'Indicar Amigos',
+  'wallet.earn.referral.sub': 'Compartilhe seu link. Eles ganham 10 créditos bônus ao cadastrar. Você ganha 5 quando processarem o primeiro vídeo.',
+  'wallet.earn.referral.copy': 'Copiar Link',
+  'wallet.earn.referral.copied': 'Copiado!',
+  'wallet.earn.referral.stats': 'indicações · créditos ganhos',
+  'wallet.earn.referral.loading': 'Gerando seu link…',
+
+  // Detail page export actions
+  'detail.downloadReport': 'Relatório Completo',
+  'detail.copyAll': 'Copiar Tudo',
+  'detail.copySummary': 'Copiar Resumo',
+  'detail.copyTranscript': 'Copiar Transcrição',
+  'detail.copyInsights': 'Copiar Insights',
 };

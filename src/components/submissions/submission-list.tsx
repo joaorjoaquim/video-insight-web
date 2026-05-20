@@ -3,11 +3,12 @@ import { SubmissionCard, SubmissionStatus } from "./submission-card";
 import { useVideos } from "../../lib/api/hooks";
 import { formatSubmissionDate } from "../../lib/utils/date-formatter";
 import { useT } from "../../lib/i18n";
+import { CustomSelect } from "../ui/custom-select";
 import type { TranslationKey } from "../../lib/i18n/locales/en";
 
 type StatusOption = { labelKey: TranslationKey; value: SubmissionStatus | "all" };
 
-const STATUS_OPTIONS: StatusOption[] = [
+const STATUS_KEYS: StatusOption[] = [
   { labelKey: "list.allStatuses", value: "all" },
   { labelKey: "list.pending",     value: "pending" },
   { labelKey: "list.downloaded",  value: "downloaded" },
@@ -54,16 +55,11 @@ export function SubmissionList() {
     <div>
       {/* Filters */}
       <div className="flex flex-col md:flex-row gap-2 mb-6">
-        <select
+        <CustomSelect
           value={status}
-          onChange={(e) => setStatus(e.target.value as SubmissionStatus | "all")}
-          className="border border-[var(--rule)] rounded-[6px] px-3 py-2 text-[11px] font-medium tracking-[0.1em] bg-white dark:bg-zinc-900 text-[var(--ink-2)] focus:outline-none focus:border-[var(--bars)] transition-colors"
-          style={{ fontFamily: "var(--font-mono-br, monospace)" }}
-        >
-          {STATUS_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>
-          ))}
-        </select>
+          onChange={(v) => setStatus(v as SubmissionStatus | "all")}
+          options={STATUS_KEYS.map((o) => ({ value: o.value, label: t(o.labelKey) }))}
+        />
         <input
           placeholder={t("list.search")}
           value={search}

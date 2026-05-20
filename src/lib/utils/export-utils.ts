@@ -1,111 +1,64 @@
 import jsPDF from "jspdf";
 
-// Simple logo placeholder - we'll create a proper logo later
-const createLogoPlaceholder = (
-  pdf: any,
-  x: number,
-  y: number,
-  width: number,
-  height: number
-) => {
-  // Draw a rounded rectangle for the logo background
-  pdf.setFillColor(255, 255, 255, 0.95);
-  pdf.roundedRect(x, y, width, height, 4, 4, "F");
-
-  // Draw a simple icon (play button)
-  pdf.setFillColor(99, 102, 241); // Indigo color
-  pdf.circle(x + width / 2, y + height / 2, width / 3, "F");
-
-  // Draw play triangle
-  pdf.setFillColor(255, 255, 255);
-  const triangleSize = width / 5;
-  pdf.moveTo(
-    x + width / 2 - triangleSize / 2,
-    y + height / 2 - triangleSize / 2
-  );
-  pdf.lineTo(
-    x + width / 2 - triangleSize / 2,
-    y + height / 2 + triangleSize / 2
-  );
-  pdf.lineTo(x + width / 2 + triangleSize / 2, y + height / 2);
-  pdf.closePath();
-  pdf.fill();
+// Brand palette (matches globals.css tokens)
+const BRAND = {
+  play:    [242, 162,  64] as [number, number, number], // --play  #F2A240
+  bars:    [126,  29, 253] as [number, number, number], // --bars  #7E1DFD
+  bg:      [242, 240, 234] as [number, number, number], // --briefing-bg #F2F0EA
+  ink1:    [ 24,  24,  27] as [number, number, number], // ~zinc-900
+  ink3:    [113, 113, 122] as [number, number, number], // ~zinc-500
+  white:   [255, 255, 255] as [number, number, number],
 };
 
-// Function to add logo to PDF
-const addLogoToPDF = (
-  pdf: any,
-  x: number,
-  y: number,
-  width: number,
-  height: number
-) => {
-  try {
-    // Use our custom logo placeholder
-    createLogoPlaceholder(pdf, x, y, width, height);
-  } catch (error) {
-    console.warn("Could not add logo to PDF:", error);
-    // Fallback: draw a simple placeholder
-    pdf.setFillColor(255, 255, 255, 0.2);
-    pdf.rect(x, y, width, height, "F");
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(8);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("LOGO", x + width / 2 - 10, y + height / 2 + 2);
+function addHeader(pdf: jsPDF, title: string) {
+  const pw = pdf.internal.pageSize.getWidth();
+  const margin = 20;
+
+  // Orange header bar
+  pdf.setFillColor(...BRAND.play);
+  pdf.rect(0, 0, pw, 44, "F");
+
+  // Brand name
+  pdf.setTextColor(...BRAND.white);
+  pdf.setFontSize(18);
+  pdf.setFont("helvetica", "bold");
+  pdf.text("SummaryVideos", margin, 20);
+
+  pdf.setFontSize(9);
+  pdf.setFont("helvetica", "normal");
+  pdf.text(`summaryvideos.com  ·  ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`, margin, 32);
+
+  // Purple accent stripe
+  pdf.setFillColor(...BRAND.bars);
+  pdf.rect(0, 44, pw, 3, "F");
+
+  // Video title
+  pdf.setTextColor(...BRAND.ink1);
+  pdf.setFontSize(14);
+  pdf.setFont("helvetica", "bold");
+  const titleLines = pdf.splitTextToSize(title, pw - margin * 2);
+  pdf.text(titleLines.slice(0, 2), margin, 62);
+}
+
+function sectionLabel(pdf: jsPDF, label: string, y: number, margin: number) {
+  pdf.setFillColor(...BRAND.bars);
+  pdf.rect(margin, y, 3, 10, "F");
+  pdf.setTextColor(...BRAND.bars);
+  pdf.setFontSize(10);
+  pdf.setFont("helvetica", "bold");
+  pdf.text(label.toUpperCase(), margin + 7, y + 7);
+  return y + 18;
+}
+
+function maybeAddPage(pdf: jsPDF, y: number, margin: number): number {
+  const ph = pdf.internal.pageSize.getHeight();
+  if (y > ph - margin - 10) {
+    pdf.addPage();
+    return margin + 10;
   }
-};
+  return y;
+}
 
-// Utility function to format content for different export types
-export const formatContentForExport = (
-  type: "summary" | "transcript" | "insights",
-  data: any,
-  videoTitle: string
-): string => {
-  const timestamp = new Date().toLocaleString();
-  const header = `Video Insights - ${videoTitle}\nGenerated on: ${timestamp}\n\n`;
-
-  switch (type) {
-    case "summary":
-      return `${header}SUMMARY\n${"=".repeat(50)}\n\n${
-        data.summary?.text || "No summary available."
-      }\n\nMETRICS\n${"=".repeat(50)}\n${
-        data.summary?.metrics
-          ?.map((metric: any) => `${metric.label}: ${metric.value}`)
-          .join("\n") || "No metrics available."
-      }\n\nTOPICS\n${"=".repeat(50)}\n${
-        data.summary?.topics?.join("\n") || "No topics available."
-      }`;
-
-    case "transcript":
-      const transcriptText =
-        data.transcript
-          ?.map((item: any) => `[${item.time}] ${item.text}`)
-          .join("\n") || "No transcript available.";
-      return `${header}TRANSCRIPT\n${"=".repeat(50)}\n\n${transcriptText}`;
-
-    case "insights":
-      const insightsText =
-        data.insights?.sections
-          ?.map(
-            (section: any) =>
-              `${section.title}\n${"-".repeat(30)}\n${section.items
-                ?.map(
-                  (item: any) =>
-                    `• ${item.text}${
-                      item.confidence ? ` (${item.confidence}% confidence)` : ""
-                    }`
-                )
-                .join("\n")}`
-          )
-          .join("\n\n") || "No insights available.";
-      return `${header}INSIGHTS\n${"=".repeat(50)}\n\n${insightsText}`;
-
-    default:
-      return "No content available.";
-  }
-};
-
-// Download PDF function
 export const downloadAsPDF = (
   type: "summary" | "transcript" | "insights",
   data: any,
@@ -113,393 +66,384 @@ export const downloadAsPDF = (
 ) => {
   try {
     const pdf = new jsPDF();
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
+    const pw  = pdf.internal.pageSize.getWidth();
     const margin = 20;
-    const maxWidth = pageWidth - margin * 2;
+    const maxW  = pw - margin * 2;
 
-    // Set up colors
-    const primaryColor = [99, 102, 241] as [number, number, number]; // Indigo
-    const secondaryColor = [107, 114, 128] as [number, number, number]; // Gray
-    const accentColor = [139, 92, 246] as [number, number, number]; // Purple
+    addHeader(pdf, videoTitle);
+    let y = 82;
 
-    // Header section with gradient-like effect
-    pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    pdf.rect(0, 0, pageWidth, 50, "F");
+    if (type === "summary") {
+      y = sectionLabel(pdf, "Summary", y, margin);
+      pdf.setTextColor(...BRAND.ink1);
+      pdf.setFontSize(11);
+      pdf.setFont("helvetica", "normal");
+      const lines = pdf.splitTextToSize(data.summary?.text || "No summary available.", maxW);
+      for (const line of lines) {
+        y = maybeAddPage(pdf, y, margin);
+        pdf.text(line, margin, y);
+        y += 6;
+      }
+      y += 10;
 
-    // Add a subtle gradient effect with a lighter rectangle
-    pdf.setFillColor(139, 92, 246, 0.1); // Light purple overlay
-    pdf.rect(0, 0, pageWidth, 50, "F");
+      if (data.summary?.metrics?.length) {
+        y = maybeAddPage(pdf, y, margin);
+        y = sectionLabel(pdf, "Metrics", y, margin);
+        for (const m of data.summary.metrics) {
+          y = maybeAddPage(pdf, y, margin);
+          pdf.setTextColor(...BRAND.ink3);
+          pdf.setFontSize(9);
+          pdf.setFont("helvetica", "normal");
+          pdf.text(m.label, margin, y);
+          pdf.setTextColor(...BRAND.ink1);
+          pdf.setFontSize(11);
+          pdf.setFont("helvetica", "bold");
+          pdf.text(String(m.value), margin + 60, y);
+          y += 8;
+        }
+        y += 8;
+      }
 
-    // Add logo to header
-    addLogoToPDF(pdf, margin, 10, 25, 25);
-
-    // App branding
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(22);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Video Insights", margin + 35, 25);
-
-    pdf.setTextColor(255, 255, 255, 0.8);
-    pdf.setFontSize(10);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(`Generated on: ${new Date().toLocaleString()}`, margin + 35, 35);
-
-    // Video title section
-    pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    pdf.setFontSize(18);
-    pdf.setFont("helvetica", "bold");
-    pdf.text(videoTitle, margin, 70);
-
-    let yPosition = 90;
-
-    switch (type) {
-      case "summary":
-        yPosition = generateSummaryPDF(
-          pdf,
-          data,
-          yPosition,
-          margin,
-          maxWidth,
-          pageHeight,
-          primaryColor,
-          secondaryColor,
-          accentColor
-        );
-        break;
-      case "transcript":
-        yPosition = generateTranscriptPDF(
-          pdf,
-          data,
-          yPosition,
-          margin,
-          maxWidth,
-          pageHeight,
-          primaryColor,
-          secondaryColor
-        );
-        break;
-      case "insights":
-        yPosition = generateInsightsPDF(
-          pdf,
-          data,
-          yPosition,
-          margin,
-          maxWidth,
-          pageHeight,
-          primaryColor,
-          secondaryColor,
-          accentColor
-        );
-        break;
+      if (data.summary?.topics?.length) {
+        y = maybeAddPage(pdf, y, margin);
+        y = sectionLabel(pdf, "Topics", y, margin);
+        pdf.setTextColor(...BRAND.ink1);
+        pdf.setFontSize(11);
+        pdf.setFont("helvetica", "normal");
+        for (const topic of data.summary.topics) {
+          y = maybeAddPage(pdf, y, margin);
+          pdf.setFillColor(...BRAND.play);
+          pdf.circle(margin + 2, y - 2, 1.5, "F");
+          pdf.text(topic, margin + 8, y);
+          y += 7;
+        }
+      }
     }
 
-    const filename = `${videoTitle
-      .replace(/[^a-z0-9]/gi, "_")
-      .toLowerCase()}_${type}.pdf`;
-    pdf.save(filename);
+    if (type === "transcript") {
+      y = sectionLabel(pdf, "Transcript", y, margin);
+      const transcript = data.transcript || [];
+      pdf.setFontSize(10);
+      for (const item of transcript) {
+        y = maybeAddPage(pdf, y, margin);
+        pdf.setTextColor(...BRAND.bars);
+        pdf.setFont("helvetica", "bold");
+        pdf.text(`[${item.time}]`, margin, y);
+        pdf.setTextColor(...BRAND.ink1);
+        pdf.setFont("helvetica", "normal");
+        const lines = pdf.splitTextToSize(item.text, maxW - 28);
+        pdf.text(lines[0], margin + 22, y);
+        y += 6;
+        for (let i = 1; i < lines.length; i++) {
+          y = maybeAddPage(pdf, y, margin);
+          pdf.text(lines[i], margin + 22, y);
+          y += 6;
+        }
+        y += 4;
+      }
+    }
 
-    console.log(`PDF downloaded: ${filename}`);
+    if (type === "insights") {
+      y = sectionLabel(pdf, "Insights", y, margin);
+      const sections = data.insights?.sections || [];
+      for (const section of sections) {
+        y = maybeAddPage(pdf, y, margin);
+        pdf.setTextColor(...BRAND.bars);
+        pdf.setFontSize(12);
+        pdf.setFont("helvetica", "bold");
+        pdf.text(section.title, margin, y);
+        y += 10;
+
+        pdf.setTextColor(...BRAND.ink1);
+        pdf.setFontSize(10);
+        pdf.setFont("helvetica", "normal");
+        for (const item of (section.items || [])) {
+          y = maybeAddPage(pdf, y, margin);
+          pdf.setFillColor(...BRAND.bars);
+          pdf.circle(margin + 2, y - 2, 1.5, "F");
+          let text = item.text || "";
+          if (item.confidence) text += ` (${item.confidence}%)`;
+          const lines = pdf.splitTextToSize(text, maxW - 10);
+          pdf.text(lines[0], margin + 8, y);
+          y += 6;
+          for (let i = 1; i < lines.length; i++) {
+            y = maybeAddPage(pdf, y, margin);
+            pdf.text(lines[i], margin + 8, y);
+            y += 6;
+          }
+          y += 3;
+        }
+        y += 8;
+      }
+    }
+
+    const filename = `${videoTitle.replace(/[^a-z0-9]/gi, "_").toLowerCase()}_${type}.pdf`;
+    pdf.save(filename);
   } catch (error) {
-    console.error("Error generating PDF:", error);
+    console.error("PDF generation failed:", error);
     alert("Failed to generate PDF. Please try again.");
   }
 };
 
-// Generate Summary PDF
-const generateSummaryPDF = (
-  pdf: any,
-  data: any,
-  startY: number,
-  margin: number,
-  maxWidth: number,
-  pageHeight: number,
-  primaryColor: number[],
-  secondaryColor: number[],
-  accentColor: number[]
-) => {
-  let yPosition = startY;
+export const downloadFullReportPDF = (data: any, videoTitle: string) => {
+  try {
+    const pdf = new jsPDF();
+    const pw = pdf.internal.pageSize.getWidth();
+    const margin = 20;
+    const maxW = pw - margin * 2;
 
-  // Summary section header with better styling
-  pdf.setFillColor(accentColor[0], accentColor[1], accentColor[2]);
-  pdf.rect(margin - 5, yPosition - 10, 120, 10, "F");
-  pdf.setTextColor(255, 255, 255);
-  pdf.setFontSize(14);
-  pdf.setFont("helvetica", "bold");
-  pdf.text("Summary", margin, yPosition);
-  yPosition += 25;
+    addHeader(pdf, videoTitle);
+    let y = 82;
 
-  // Summary text
-  pdf.setTextColor(0, 0, 0);
-  pdf.setFontSize(11);
-  pdf.setFont("helvetica", "normal");
-  const summaryText = data.summary?.text || "No summary available.";
-  const summaryLines = pdf.splitTextToSize(summaryText, maxWidth);
-
-  for (let i = 0; i < summaryLines.length; i++) {
-    if (yPosition > pageHeight - margin) {
-      pdf.addPage();
-      yPosition = 20;
-    }
-    pdf.text(summaryLines[i], margin, yPosition);
-    yPosition += 6;
-  }
-  yPosition += 15;
-
-  // Metrics section
-  if (data.summary?.metrics && data.summary.metrics.length > 0) {
-    pdf.setFillColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-    pdf.rect(margin - 5, yPosition - 10, 100, 10, "F");
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(14);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Metrics", margin, yPosition);
-    yPosition += 25;
-
-    pdf.setTextColor(0, 0, 0);
+    // ── Summary ──────────────────────────────────────────
+    y = sectionLabel(pdf, "Summary", y, margin);
+    pdf.setTextColor(...BRAND.ink1);
     pdf.setFontSize(11);
     pdf.setFont("helvetica", "normal");
-
-    const metricsPerRow = 2;
-    let currentX = margin;
-
-    data.summary.metrics.forEach((metric: any, index: number) => {
-      if (yPosition > pageHeight - margin) {
-        pdf.addPage();
-        yPosition = 20;
-      }
-
-      // Metric box
-      pdf.setFillColor(248, 250, 252);
-      pdf.rect(currentX, yPosition - 5, 80, 25, "F");
-      pdf.setDrawColor(226, 232, 240);
-      pdf.rect(currentX, yPosition - 5, 80, 25, "S");
-
-      // Metric content
-      pdf.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-      pdf.setFontSize(9);
-      pdf.setFont("helvetica", "bold");
-      pdf.text(metric.label, currentX + 5, yPosition + 2);
-
-      pdf.setTextColor(0, 0, 0);
-      pdf.setFontSize(11);
-      pdf.setFont("helvetica", "bold");
-      pdf.text(metric.value, currentX + 5, yPosition + 12);
-
-      if ((index + 1) % metricsPerRow === 0) {
-        currentX = margin;
-        yPosition += 35;
-      } else {
-        currentX += 90;
-      }
-    });
-
-    if (data.summary.metrics.length % metricsPerRow !== 0) {
-      yPosition += 35;
+    const summaryLines = pdf.splitTextToSize(data.summary?.text || "No summary available.", maxW);
+    for (const line of summaryLines) {
+      y = maybeAddPage(pdf, y, margin);
+      pdf.text(line, margin, y);
+      y += 6;
     }
-    yPosition += 15;
-  }
+    y += 10;
 
-  // Topics section
-  if (data.summary?.topics && data.summary.topics.length > 0) {
-    pdf.setFillColor(accentColor[0], accentColor[1], accentColor[2]);
-    pdf.rect(margin - 5, yPosition - 10, 100, 10, "F");
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(14);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Topics", margin, yPosition);
-    yPosition += 25;
-
-    pdf.setTextColor(0, 0, 0);
-    pdf.setFontSize(11);
-    pdf.setFont("helvetica", "normal");
-
-    data.summary.topics.forEach((topic: string) => {
-      if (yPosition > pageHeight - margin) {
-        pdf.addPage();
-        yPosition = 20;
-      }
-
-      // Topic bullet
-      pdf.setFillColor(accentColor[0], accentColor[1], accentColor[2]);
-      pdf.circle(margin + 3, yPosition - 2, 2, "F");
-      pdf.text(topic, margin + 10, yPosition);
-      yPosition += 8;
-    });
-  }
-
-  return yPosition;
-};
-
-// Generate Transcript PDF
-const generateTranscriptPDF = (
-  pdf: any,
-  data: any,
-  startY: number,
-  margin: number,
-  maxWidth: number,
-  pageHeight: number,
-  primaryColor: number[],
-  secondaryColor: number[]
-) => {
-  let yPosition = startY;
-
-  // Transcript section header
-  pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  pdf.rect(margin - 5, yPosition - 10, 120, 10, "F");
-  pdf.setTextColor(255, 255, 255);
-  pdf.setFontSize(14);
-  pdf.setFont("helvetica", "bold");
-  pdf.text("Transcript", margin, yPosition);
-  yPosition += 25;
-
-  // Transcript entries
-  pdf.setTextColor(0, 0, 0);
-  pdf.setFontSize(11);
-  pdf.setFont("helvetica", "normal");
-
-  const transcript = data.transcript || [];
-
-  transcript.forEach((item: any) => {
-    if (yPosition > pageHeight - margin) {
-      pdf.addPage();
-      yPosition = 20;
-    }
-
-    // Timestamp
-    pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    pdf.setFontSize(10);
-    pdf.setFont("helvetica", "bold");
-    pdf.text(`[${item.time}]`, margin, yPosition);
-
-    // Text
-    pdf.setTextColor(0, 0, 0);
-    pdf.setFontSize(11);
-    pdf.setFont("helvetica", "normal");
-    const textLines = pdf.splitTextToSize(item.text, maxWidth - 50);
-
-    // First line of text
-    pdf.text(textLines[0], margin + 30, yPosition);
-    yPosition += 8;
-
-    // Additional lines if text is long
-    for (let i = 1; i < textLines.length; i++) {
-      if (yPosition > pageHeight - margin) {
-        pdf.addPage();
-        yPosition = 20;
-      }
-      pdf.text(textLines[i], margin + 30, yPosition);
-      yPosition += 8;
-    }
-
-    yPosition += 12; // More space between transcript entries
-  });
-
-  return yPosition;
-};
-
-// Generate Insights PDF
-const generateInsightsPDF = (
-  pdf: any,
-  data: any,
-  startY: number,
-  margin: number,
-  maxWidth: number,
-  pageHeight: number,
-  primaryColor: number[],
-  secondaryColor: number[],
-  accentColor: number[]
-) => {
-  let yPosition = startY;
-
-  // Insights section header
-  pdf.setFillColor(accentColor[0], accentColor[1], accentColor[2]);
-  pdf.rect(margin - 5, yPosition - 10, 120, 10, "F");
-  pdf.setTextColor(255, 255, 255);
-  pdf.setFontSize(14);
-  pdf.setFont("helvetica", "bold");
-  pdf.text("Insights", margin, yPosition);
-  yPosition += 25;
-
-  const sections = data.insights?.sections || [];
-
-  sections.forEach((section: any) => {
-    if (yPosition > pageHeight - margin) {
-      pdf.addPage();
-      yPosition = 20;
-    }
-
-    // Section title with background
-    pdf.setFillColor(accentColor[0], accentColor[1], accentColor[2], 0.1);
-    pdf.rect(margin - 3, yPosition - 8, 150, 12, "F");
-    pdf.setTextColor(accentColor[0], accentColor[1], accentColor[2]);
-    pdf.setFontSize(13);
-    pdf.setFont("helvetica", "bold");
-    pdf.text(section.title, margin, yPosition);
-    yPosition += 20;
-
-    // Section items
-    pdf.setTextColor(0, 0, 0);
-    pdf.setFontSize(11);
-    pdf.setFont("helvetica", "normal");
-
-    section.items?.forEach((item: any) => {
-      if (yPosition > pageHeight - margin) {
-        pdf.addPage();
-        yPosition = 20;
-      }
-
-      // Item bullet
-      pdf.setFillColor(accentColor[0], accentColor[1], accentColor[2]);
-      pdf.circle(margin + 3, yPosition - 2, 2, "F");
-
-      // Item text
-      let itemText = item.text;
-      if (item.confidence) {
-        itemText += ` (${item.confidence}% confidence)`;
-      }
-      if (item.key) {
-        pdf.setTextColor(accentColor[0], accentColor[1], accentColor[2]);
+    if (data.summary?.metrics?.length) {
+      y = maybeAddPage(pdf, y, margin);
+      y = sectionLabel(pdf, "Metrics", y, margin);
+      for (const m of data.summary.metrics) {
+        y = maybeAddPage(pdf, y, margin);
+        pdf.setTextColor(...BRAND.ink3);
+        pdf.setFontSize(9);
+        pdf.setFont("helvetica", "normal");
+        pdf.text(m.label, margin, y);
+        pdf.setTextColor(...BRAND.ink1);
+        pdf.setFontSize(11);
         pdf.setFont("helvetica", "bold");
-        itemText += " [KEY INSIGHT]";
+        pdf.text(String(m.value), margin + 60, y);
+        y += 8;
       }
-      if (item.quote) {
-        pdf.setTextColor(
-          secondaryColor[0],
-          secondaryColor[1],
-          secondaryColor[2]
-        );
-        itemText = `"${itemText}"`;
-      }
+      y += 8;
+    }
 
-      // Reset text color for main text
-      pdf.setTextColor(0, 0, 0);
+    if (data.summary?.topics?.length) {
+      y = maybeAddPage(pdf, y, margin);
+      y = sectionLabel(pdf, "Topics", y, margin);
+      pdf.setTextColor(...BRAND.ink1);
+      pdf.setFontSize(11);
       pdf.setFont("helvetica", "normal");
-
-      const textLines = pdf.splitTextToSize(itemText, maxWidth - 10);
-      pdf.text(textLines[0], margin + 10, yPosition);
-      yPosition += 7;
-
-      // Additional lines if text is long
-      for (let i = 1; i < textLines.length; i++) {
-        if (yPosition > pageHeight - margin) {
-          pdf.addPage();
-          yPosition = 20;
-        }
-        pdf.text(textLines[i], margin + 10, yPosition);
-        yPosition += 7;
+      for (const topic of data.summary.topics) {
+        y = maybeAddPage(pdf, y, margin);
+        pdf.setFillColor(...BRAND.play);
+        pdf.circle(margin + 2, y - 2, 1.5, "F");
+        pdf.text(topic, margin + 8, y);
+        y += 7;
       }
+      y += 10;
+    }
 
-      yPosition += 10;
-    });
+    // ── Transcript ───────────────────────────────────────
+    const transcript = data.transcript || [];
+    if (transcript.length) {
+      y = maybeAddPage(pdf, y, margin);
+      y = sectionLabel(pdf, "Transcript", y, margin);
+      pdf.setFontSize(10);
+      for (const item of transcript) {
+        y = maybeAddPage(pdf, y, margin);
+        pdf.setTextColor(...BRAND.bars);
+        pdf.setFont("helvetica", "bold");
+        pdf.text(`[${item.time}]`, margin, y);
+        pdf.setTextColor(...BRAND.ink1);
+        pdf.setFont("helvetica", "normal");
+        const tlines = pdf.splitTextToSize(item.text, maxW - 28);
+        pdf.text(tlines[0], margin + 22, y);
+        y += 6;
+        for (let i = 1; i < tlines.length; i++) {
+          y = maybeAddPage(pdf, y, margin);
+          pdf.text(tlines[i], margin + 22, y);
+          y += 6;
+        }
+        y += 4;
+      }
+      y += 10;
+    }
 
-    yPosition += 15;
-  });
+    // ── Insights ─────────────────────────────────────────
+    const insightSections = data.insights?.sections || [];
+    if (insightSections.length) {
+      y = maybeAddPage(pdf, y, margin);
+      y = sectionLabel(pdf, "Insights", y, margin);
+      for (const section of insightSections) {
+        y = maybeAddPage(pdf, y, margin);
+        pdf.setTextColor(...BRAND.bars);
+        pdf.setFontSize(12);
+        pdf.setFont("helvetica", "bold");
+        pdf.text(section.title, margin, y);
+        y += 10;
+        pdf.setTextColor(...BRAND.ink1);
+        pdf.setFontSize(10);
+        pdf.setFont("helvetica", "normal");
+        for (const item of (section.items || [])) {
+          y = maybeAddPage(pdf, y, margin);
+          pdf.setFillColor(...BRAND.bars);
+          pdf.circle(margin + 2, y - 2, 1.5, "F");
+          let text = item.text || "";
+          if (item.confidence) text += ` (${item.confidence}%)`;
+          const ilines = pdf.splitTextToSize(text, maxW - 10);
+          pdf.text(ilines[0], margin + 8, y);
+          y += 6;
+          for (let i = 1; i < ilines.length; i++) {
+            y = maybeAddPage(pdf, y, margin);
+            pdf.text(ilines[i], margin + 8, y);
+            y += 6;
+          }
+          y += 3;
+        }
+        y += 8;
+      }
+      y += 10;
+    }
 
-  return yPosition;
+    // ── Mind Map (text outline) ───────────────────────────
+    const mindMap = data.mindMap;
+    if (mindMap?.root) {
+      y = maybeAddPage(pdf, y, margin);
+      y = sectionLabel(pdf, "Mind Map", y, margin);
+      pdf.setTextColor(...BRAND.ink1);
+      pdf.setFontSize(12);
+      pdf.setFont("helvetica", "bold");
+      pdf.text(mindMap.root, margin, y);
+      y += 10;
+      pdf.setFontSize(10);
+      pdf.setFont("helvetica", "normal");
+      for (const branch of (mindMap.branches || [])) {
+        y = maybeAddPage(pdf, y, margin);
+        pdf.setTextColor(...BRAND.bars);
+        pdf.setFont("helvetica", "bold");
+        pdf.text(`  ${branch.label || branch.name || ""}`, margin, y);
+        y += 7;
+        pdf.setTextColor(...BRAND.ink1);
+        pdf.setFont("helvetica", "normal");
+        for (const child of (branch.children || [])) {
+          y = maybeAddPage(pdf, y, margin);
+          pdf.setFillColor(...BRAND.ink3);
+          pdf.circle(margin + 6, y - 2, 1, "F");
+          pdf.text(`    ${child.label || child.name || child}`, margin + 2, y);
+          y += 6;
+        }
+        y += 3;
+      }
+    }
+
+    const filename = `${videoTitle.replace(/[^a-z0-9]/gi, "_").toLowerCase()}_report.pdf`;
+    pdf.save(filename);
+  } catch (error) {
+    console.error("PDF generation failed:", error);
+    alert("Failed to generate PDF. Please try again.");
+  }
 };
 
-// Copy to clipboard function
+export const copyFullReport = async (data: any, videoTitle: string) => {
+  const sep = "─".repeat(40);
+  const lines: string[] = [
+    `SummaryVideos — ${videoTitle}`,
+    new Date().toLocaleString(),
+    "",
+    `SUMMARY\n${sep}`,
+    data.summary?.text || "",
+    "",
+  ];
+
+  if (data.summary?.metrics?.length) {
+    lines.push(`METRICS\n${sep}`);
+    for (const m of data.summary.metrics) lines.push(`${m.label}: ${m.value}`);
+    lines.push("");
+  }
+  if (data.summary?.topics?.length) {
+    lines.push(`TOPICS\n${sep}`);
+    lines.push(...data.summary.topics);
+    lines.push("");
+  }
+
+  if (data.transcript?.length) {
+    lines.push(`TRANSCRIPT\n${sep}`);
+    for (const t of data.transcript) lines.push(`[${t.time}] ${t.text}`);
+    lines.push("");
+  }
+
+  if (data.insights?.sections?.length) {
+    lines.push(`INSIGHTS\n${sep}`);
+    for (const s of data.insights.sections) {
+      lines.push(s.title);
+      for (const item of (s.items || [])) {
+        let text = `  • ${item.text || ""}`;
+        if (item.confidence) text += ` (${item.confidence}%)`;
+        lines.push(text);
+      }
+      lines.push("");
+    }
+  }
+
+  if (data.mindMap?.root) {
+    lines.push(`MIND MAP\n${sep}`);
+    lines.push(data.mindMap.root);
+    for (const branch of (data.mindMap.branches || [])) {
+      lines.push(`  ${branch.label || branch.name || ""}`);
+      for (const child of (branch.children || [])) {
+        lines.push(`    · ${child.label || child.name || child}`);
+      }
+    }
+  }
+
+  const content = lines.join("\n");
+  try {
+    if (navigator.clipboard) {
+      await navigator.clipboard.writeText(content);
+    } else {
+      const el = document.createElement("textarea");
+      el.value = content;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+    }
+  } catch (error) {
+    console.error("Copy failed:", error);
+    alert("Failed to copy. Please try again.");
+  }
+};
+
+export const formatContentForExport = (
+  type: "summary" | "transcript" | "insights",
+  data: any,
+  videoTitle: string
+): string => {
+  const header = `SummaryVideos — ${videoTitle}\n${new Date().toLocaleString()}\n\n`;
+
+  if (type === "summary") {
+    const text   = data.summary?.text || "";
+    const metrics = (data.summary?.metrics || []).map((m: any) => `${m.label}: ${m.value}`).join("\n");
+    const topics  = (data.summary?.topics || []).join("\n");
+    return `${header}SUMMARY\n${"─".repeat(40)}\n${text}\n\nMETRICS\n${"─".repeat(40)}\n${metrics}\n\nTOPICS\n${"─".repeat(40)}\n${topics}`;
+  }
+
+  if (type === "transcript") {
+    const lines = (data.transcript || []).map((t: any) => `[${t.time}] ${t.text}`).join("\n");
+    return `${header}TRANSCRIPT\n${"─".repeat(40)}\n${lines}`;
+  }
+
+  if (type === "insights") {
+    const sections = (data.insights?.sections || [])
+      .map((s: any) =>
+        `${s.title}\n${"─".repeat(30)}\n` +
+        (s.items || []).map((i: any) => `• ${i.text}${i.confidence ? ` (${i.confidence}%)` : ""}`).join("\n")
+      ).join("\n\n");
+    return `${header}INSIGHTS\n${"─".repeat(40)}\n${sections}`;
+  }
+
+  return "";
+};
+
 export const copyToClipboard = async (
   type: "summary" | "transcript" | "insights",
   data: any,
@@ -507,28 +451,22 @@ export const copyToClipboard = async (
 ) => {
   try {
     const content = formatContentForExport(type, data, videoTitle);
-
     if (navigator.clipboard) {
       await navigator.clipboard.writeText(content);
     } else {
-      // Fallback for older browsers
-      const textArea = document.createElement("textarea");
-      textArea.value = content;
-      document.body.appendChild(textArea);
-      textArea.select();
+      const el = document.createElement("textarea");
+      el.value = content;
+      document.body.appendChild(el);
+      el.select();
       document.execCommand("copy");
-      document.body.removeChild(textArea);
+      document.body.removeChild(el);
     }
-
-    // Show success feedback
-    console.log("Content copied to clipboard!");
   } catch (error) {
-    console.error("Error copying to clipboard:", error);
-    alert("Failed to copy content. Please try again.");
+    console.error("Copy failed:", error);
+    alert("Failed to copy. Please try again.");
   }
 };
 
-// Share function
 export const shareContent = async (
   type: "summary" | "transcript" | "insights",
   data: any,
@@ -536,22 +474,16 @@ export const shareContent = async (
 ) => {
   try {
     const content = formatContentForExport(type, data, videoTitle);
-
     if (navigator.share) {
       await navigator.share({
-        title: `Video Insights - ${videoTitle}`,
-        text: content.substring(0, 1000) + (content.length > 1000 ? "..." : ""),
+        title: `SummaryVideos — ${videoTitle}`,
+        text: content.slice(0, 1000) + (content.length > 1000 ? "…" : ""),
         url: window.location.href,
       });
     } else {
-      // Fallback: copy to clipboard and show message
       await copyToClipboard(type, data, videoTitle);
-      console.log(
-        "Content copied to clipboard! You can now share it manually."
-      );
     }
   } catch (error) {
-    console.error("Error sharing content:", error);
-    alert("Failed to share content. Please try again.");
+    console.error("Share failed:", error);
   }
 };
