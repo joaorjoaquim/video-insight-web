@@ -53,7 +53,6 @@ export const metadata: Metadata = {
     siteName: "SummaryVideos",
     locale: "en_US",
     type: "website",
-    // TODO: generate og-image.png (1200×630) and place in /public
     images: [
       {
         url: "/og-image.png",
