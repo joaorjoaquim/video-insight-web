@@ -80,10 +80,7 @@ const authSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
-    setAuthDialogState: (state, action: PayloadAction<{ isOpen: boolean; mode?: 'login' | 'signup' }>) => {
-      // This will be handled by a separate dialog slice
-    },
-    // New action for OAuth authentication
+    // OAuth session action
     setOAuthSession: (state, action: PayloadAction<{ user: User; token: string }>) => {
       state.user = action.payload.user;
       state.token = action.payload.token;

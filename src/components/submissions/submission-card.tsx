@@ -1,9 +1,7 @@
 import React from "react";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { PlayCircle02Icon } from "@hugeicons/core-free-icons";
-import { Button } from "../ui/button";
 import Link from "next/link";
 import { useVideoStatus } from "../../lib/api/hooks";
+import { useT } from "../../lib/i18n";
 
 export type SubmissionStatus =
   | "pending"
@@ -18,110 +16,75 @@ export interface SubmissionCardProps {
   status: SubmissionStatus;
   thumbnail?: string;
   createdAt: string;
-  progress?: number; // 0-100, opcional para status processing
+  progress?: number;
 }
 
-const statusColors: Record<SubmissionStatus, string> = {
-  pending: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200",
-  downloaded:
-    "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-200",
-  transcribing:
-    "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-  completed:
-    "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200",
-  failed: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200",
-};
+export function SubmissionCard({ id, title, status, thumbnail, createdAt, progress }: SubmissionCardProps) {
+  const t = useT();
+  const shouldPoll = status === "pending" || status === "downloaded" || status === "transcribing";
+  const { data: statusData, isLoading: isPolling } = useVideoStatus(id, shouldPoll);
 
-export function SubmissionCard({
-  id,
-  title,
-  status,
-  thumbnail,
-  createdAt,
-  progress,
-}: SubmissionCardProps) {
-  // Individual polling only for pending, downloaded, and transcribing submissions
-  // Don't poll for completed or failed statuses
-  const shouldPoll =
-    status === "pending" ||
-    status === "downloaded" ||
-    status === "transcribing";
-  const { data: statusData, isLoading: isPolling } = useVideoStatus(
-    id,
-    shouldPoll
-  );
+  const currentStatus = (statusData?.status || status) as SubmissionStatus;
+  const currentProgress = statusData?.progress ?? progress;
 
-  // Use the latest status from polling if available, otherwise use the prop
-  const currentStatus = statusData?.status || status;
-  const currentProgress = statusData?.progress || progress;
+  const isCompleted = currentStatus === "completed";
+  const isFailed = currentStatus === "failed";
+  const inFlight = !isCompleted && !isFailed;
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg shadow p-4 flex flex-col">
-      <div className="aspect-video bg-zinc-100 dark:bg-zinc-800 rounded mb-3 flex items-center justify-center overflow-hidden">
-        {thumbnail ? (
-          <img
-            src={thumbnail}
-            alt={title}
-            className="object-cover w-full h-full"
-          />
-        ) : (
-          <HugeiconsIcon
-            icon={PlayCircle02Icon}
-            className="text-4xl text-indigo-400"
-          />
-        )}
-      </div>
-      <div className="flex-1">
-        <div className="flex items-center gap-2 mb-1">
-          <span
-            className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate"
-            title={title}
-          >
-            {title}
-          </span>
-          <div className="ml-auto flex items-center gap-1">
-            {isPolling && shouldPoll && (
-              <div className="w-3 h-3 border border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-            )}
-            <span
-              className={`text-xs px-2 py-0.5 rounded ${
-                statusColors[currentStatus as SubmissionStatus]
-              }`}
-            >
-              {currentStatus.charAt(0).toUpperCase() + currentStatus.slice(1)}
-            </span>
-          </div>
-        </div>
-        <div className="text-xs text-zinc-500 mb-2">{createdAt}</div>
-        {(currentStatus === "transcribing" || currentStatus === "downloaded") &&
-          typeof currentProgress === "number" && (
-            <div className="w-full h-2 bg-zinc-200 dark:bg-zinc-800 rounded mb-2 overflow-hidden">
-              <div
-                className="h-full bg-indigo-500 transition-all duration-300"
-                style={{ width: `${currentProgress}%` }}
-              />
-            </div>
+    <div className="card-wrap h-full">
+      <div className={`card-tab ${currentStatus}`} />
+      <div
+        className="bg-white dark:bg-zinc-900 border border-[var(--rule)] rounded-[10px] p-5 pl-6 flex flex-col h-full"
+        style={{ fontFamily: "var(--font-sans-br, system-ui, sans-serif)" }}
+      >
+        {/* Top meta row */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="br-eyebrow">{createdAt}</div>
+          {isPolling && shouldPoll && (
+            <div className="bars-loader scale-[0.7] origin-right"><i/><i/><i/><i/></div>
           )}
-        {currentStatus === "completed" ? (
-          <Link href={`/submissions/${id}`}>
-            <Button variant="outline" size="sm" className="w-full mt-1">
-              View Details
-            </Button>
-          </Link>
-        ) : currentStatus === "failed" ? (
-          <Button
-            variant="destructive"
-            size="sm"
-            className="w-full mt-1"
-            disabled
-          >
-            Error
-          </Button>
-        ) : (
-          <Button variant="outline" size="sm" className="w-full mt-1" disabled>
-            Processing...
-          </Button>
+        </div>
+
+        {/* Thumbnail */}
+        {thumbnail && (
+          <div className="aspect-video bg-zinc-100 dark:bg-zinc-800 rounded-[6px] mb-3 overflow-hidden">
+            <img src={thumbnail} alt={title} className="object-cover w-full h-full" />
+          </div>
         )}
+
+        {/* Title */}
+        <div
+          style={{ fontFamily: "var(--font-display-br, Georgia, serif)", fontSize: "1.15rem", lineHeight: 1.2, letterSpacing: "-0.01em" }}
+          className="text-[var(--ink-1)] mb-3 flex-1"
+        >
+          {title}
+        </div>
+
+        {/* Progress bar for in-flight */}
+        {inFlight && typeof currentProgress === "number" && (
+          <div className="mb-3">
+            <div className="progress-rule">
+              <i style={{ width: `${currentProgress}%` }} />
+            </div>
+            <div className="br-eyebrow mt-1.5">{currentProgress}%</div>
+          </div>
+        )}
+
+        {/* Footer row */}
+        <div className="flex items-center justify-between mt-auto pt-3 border-t border-[var(--rule)]">
+          <span className={`led ${currentStatus}`}>{currentStatus}</span>
+          {isCompleted && (
+            <Link href={`/submissions/${id}`}>
+              <button className="br-eyebrow border border-[var(--ink-1)] dark:border-zinc-600 px-3 py-1.5 rounded-[4px] hover:bg-[var(--ink-1)] hover:text-[var(--briefing-bg)] transition-colors">
+                {t("card.view")}
+              </button>
+            </Link>
+          )}
+          {isFailed && (
+            <span className="br-eyebrow text-[var(--led-failed)]">{t("card.creditsRefunded")}</span>
+          )}
+        </div>
       </div>
     </div>
   );

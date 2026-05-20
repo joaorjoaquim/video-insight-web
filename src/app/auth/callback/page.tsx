@@ -37,11 +37,9 @@ function AuthCallbackContent() {
           router.push('/dashboard');
         }
       } else if (error) {
-        // Redirect to public page with error
-        router.push('/public?error=oauth_failed');
+        router.push('/?error=oauth_failed');
       } else {
-        // No token or error, redirect to public page
-        router.push('/public');
+        router.push('/');
       }
     };
 
@@ -49,13 +47,10 @@ function AuthCallbackContent() {
   }, [searchParams, router, dispatch]);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-        <h1 className="text-xl font-semibold text-gray-900 mb-2">
-          Completing authentication...
-        </h1>
-        <p className="text-gray-600">Please wait while we redirect you.</p>
+    <div className="min-h-screen bg-[var(--briefing-bg)] flex items-center justify-center">
+      <div className="text-center flex flex-col items-center gap-4">
+        <div className="bars-loader"><i/><i/><i/><i/></div>
+        <p className="br-eyebrow">Completing authentication…</p>
       </div>
     </div>
   );
@@ -64,14 +59,8 @@ function AuthCallbackContent() {
 export default function AuthCallbackPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-          <h1 className="text-xl font-semibold text-gray-900 mb-2">
-            Loading...
-          </h1>
-          <p className="text-gray-600">Please wait.</p>
-        </div>
+      <div className="min-h-screen bg-[var(--briefing-bg)] flex items-center justify-center">
+        <div className="bars-loader"><i/><i/><i/><i/></div>
       </div>
     }>
       <AuthCallbackContent />

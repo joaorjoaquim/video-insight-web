@@ -2,25 +2,23 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '../core/hooks';
-import { openAuthDialog, closeAuthDialog, switchAuthMode } from '../core/slices/dialogSlice';
+import { closeAuthDialog, switchAuthMode } from '../core/slices/dialogSlice';
 import { loginUser, signupUser, clearError } from '../core/slices/authSlice';
 import { LoginFormData, SignupFormData } from '../types/auth';
 import { getOAuthUrl } from '../lib/api/authApi';
+import { useT } from '../lib/i18n';
 
 export function AuthDialog() {
+  const t = useT();
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { isOpen, mode } = useAppSelector((state: any) => state.dialog);
   const { isLoading, error, isAuthenticated } = useAppSelector((state: any) => state.auth);
 
-  const [formData, setFormData] = useState<LoginFormData | SignupFormData>({
-    email: '',
-    password: '',
-  });
+  const [formData, setFormData] = useState<LoginFormData | SignupFormData>({ email: '', password: '' });
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
-  // Redirect to dashboard after successful authentication
   useEffect(() => {
     if (isAuthenticated && isOpen) {
       dispatch(closeAuthDialog());
@@ -29,21 +27,11 @@ export function AuthDialog() {
   }, [isAuthenticated, isOpen, dispatch, router]);
 
   const validatePassword = (password: string) => {
-    if (password.length < 8) {
-      return 'Password must be at least 8 characters long';
-    }
-    if (!/(?=.*[a-z])/.test(password)) {
-      return 'Password must contain at least one lowercase letter';
-    }
-    if (!/(?=.*[A-Z])/.test(password)) {
-      return 'Password must contain at least one uppercase letter';
-    }
-    if (!/(?=.*\d)/.test(password)) {
-      return 'Password must contain at least one number';
-    }
-    if (!/(?=.*[@$!%*?&])/.test(password)) {
-      return 'Password must contain at least one special character (@$!%*?&)';
-    }
+    if (password.length < 8) return t('validation.password.length');
+    if (!/(?=.*[a-z])/.test(password)) return t('validation.password.lowercase');
+    if (!/(?=.*[A-Z])/.test(password)) return t('validation.password.uppercase');
+    if (!/(?=.*\d)/.test(password)) return t('validation.password.number');
+    if (!/(?=.*[@$!%*?&])/.test(password)) return t('validation.password.special');
     return '';
   };
 
@@ -57,19 +45,11 @@ export function AuthDialog() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (mode === 'signup') {
-      const passwordValidation = validatePassword(formData.password);
-      if (passwordValidation) {
-        setPasswordError(passwordValidation);
-        return;
-      }
-      if (formData.password !== confirmPassword) {
-        setPasswordError('Passwords do not match');
-        return;
-      }
+      const err = validatePassword(formData.password);
+      if (err) { setPasswordError(err); return; }
+      if (formData.password !== confirmPassword) { setPasswordError(t('validation.password.match')); return; }
     }
-    
     if (mode === 'login') {
       await dispatch(loginUser(formData as LoginFormData));
     } else {
@@ -79,9 +59,7 @@ export function AuthDialog() {
 
   const handlePasswordChange = (password: string) => {
     setFormData({ ...formData, password });
-    if (mode === 'signup') {
-      setPasswordError(validatePassword(password));
-    }
+    if (mode === 'signup') setPasswordError(validatePassword(password));
   };
 
   const handleOAuth = (provider: 'google' | 'discord') => {
@@ -89,8 +67,8 @@ export function AuthDialog() {
   };
 
   const switchMode = () => {
-    const newMode = mode === 'login' ? 'signup' : 'login';
-    dispatch(switchAuthMode(newMode));
+    const next = mode === 'login' ? 'signup' : 'login';
+    dispatch(switchAuthMode(next));
     dispatch(clearError());
     setFormData({ email: '', password: '' });
     setConfirmPassword('');
@@ -100,132 +78,151 @@ export function AuthDialog() {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/85 bg-opacity-30 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-8 w-full max-w-md mx-4 shadow-xl">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">
-            {mode === 'login' ? 'Sign In' : 'Sign Up'}
-          </h2>
-          <button
-            onClick={handleClose}
-            className="text-gray-500 hover:text-gray-700 text-xl"
-          >
-            ✕
-          </button>
-        </div>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'rgba(15,17,23,0.7)' }}
+      onClick={handleClose}
+    >
+      <div
+        className="relative bg-[var(--briefing-bg)] rounded-[14px] p-8 w-full max-w-md"
+        style={{ boxShadow: 'var(--shadow-modal)', fontFamily: 'var(--font-sans-br, system-ui, sans-serif)' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close */}
+        <button
+          onClick={handleClose}
+          aria-label={t('auth.close')}
+          className="absolute top-5 right-5 text-[var(--ink-3)] hover:text-[var(--ink-1)] transition-colors"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M18 6L6 18M6 6l12 12"/>
+          </svg>
+        </button>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-4">
+          <span className="logo-bars"><i/><i/><i/></span>
+          <span className="br-eyebrow">§ {mode === 'login' ? t('auth.section.login') : t('auth.section.signup')}</span>
+        </div>
+        <h3
+          style={{ fontFamily: 'var(--font-display-br, Georgia, serif)', fontSize: '1.75rem', letterSpacing: '-0.012em', lineHeight: 1.15 }}
+          className="text-[var(--ink-1)] mb-1"
+        >
+          {mode === 'login'
+            ? <>{t('auth.headline.login')} <span className="ital-bar">{t('auth.headlineAccent.login')}</span>.</>
+            : <>{t('auth.headline.signup')} <span className="ital-bar">{t('auth.headlineAccent.signup')}</span>.</>
+          }
+        </h3>
+        <p className="br-eyebrow mb-6">
+          {mode === 'login' ? t('auth.sub.login') : t('auth.sub.signup')}
+        </p>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email
-            </label>
+            <label htmlFor="auth-email" className="br-eyebrow block mb-1.5">{t('auth.email')}</label>
             <input
+              id="auth-email"
               type="email"
-              id="email"
+              required
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              required
+              placeholder="you@example.com"
+              className="w-full border border-[var(--rule)] rounded-[6px] px-3 py-2.5 text-sm bg-white dark:bg-zinc-900 text-[var(--ink-1)] placeholder:text-[var(--ink-3)] focus:outline-none focus:border-[var(--bars)] transition-colors"
             />
           </div>
-
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              Password
-            </label>
+            <label htmlFor="auth-password" className="br-eyebrow block mb-1.5">{t('auth.password')}</label>
             <input
+              id="auth-password"
               type="password"
-              id="password"
+              required
               value={formData.password}
               onChange={(e) => handlePasswordChange(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              required
+              placeholder="••••••••"
+              className="w-full border border-[var(--rule)] rounded-[6px] px-3 py-2.5 text-sm bg-white dark:bg-zinc-900 text-[var(--ink-1)] placeholder:text-[var(--ink-3)] focus:outline-none focus:border-[var(--bars)] transition-colors"
             />
             {mode === 'signup' && formData.password && (
-              <div className="mt-1 text-xs text-gray-500">
-                Password must contain: 8+ characters, uppercase, lowercase, number, special character
-              </div>
+              <p className="br-eyebrow mt-1.5">{t('auth.passwordHint')}</p>
             )}
           </div>
-
           {mode === 'signup' && (
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                Confirm Password
-              </label>
+              <label htmlFor="auth-confirm" className="br-eyebrow block mb-1.5">{t('auth.confirmPassword')}</label>
               <input
+                id="auth-confirm"
                 type="password"
-                id="confirmPassword"
+                required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                required
+                placeholder="••••••••"
+                className="w-full border border-[var(--rule)] rounded-[6px] px-3 py-2.5 text-sm bg-white dark:bg-zinc-900 text-[var(--ink-1)] placeholder:text-[var(--ink-3)] focus:outline-none focus:border-[var(--bars)] transition-colors"
               />
             </div>
           )}
 
           {(error || passwordError) && (
-            <div className="text-red-600 text-sm">
-              {error || passwordError}
-            </div>
+            <p className="text-[var(--led-failed)] text-sm">{error || passwordError}</p>
           )}
 
           <button
             type="submit"
             disabled={isLoading || (mode === 'signup' && (!!passwordError || formData.password !== confirmPassword))}
-            className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center justify-center gap-2 w-full bg-[var(--play)] hover:bg-[var(--play-700)] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-[6px] transition-colors text-sm mt-1"
           >
-            {isLoading ? 'Loading...' : mode === 'login' ? 'Sign In' : 'Sign Up'}
+            {isLoading ? (
+              <span className="bars-loader scale-75"><i/><i/><i/><i/></span>
+            ) : (
+              <>
+                {mode === 'login' ? t('auth.submit.login') : t('auth.submit.signup')}
+                <span className="inline-block w-0 h-0 border-t-[5px] border-t-transparent border-b-[5px] border-b-transparent border-l-[8px] border-l-white" />
+              </>
+            )}
           </button>
         </form>
 
-        <div className="mt-6">
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Or continue with</span>
-            </div>
+        {/* Divider */}
+        <div className="relative my-5">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-[var(--rule)]" />
           </div>
-
-          <div className="mt-6 grid grid-cols-2 gap-3">
-            <button
-              onClick={() => handleOAuth('google')}
-              className="w-full inline-flex justify-center items-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-            >
-              <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-              </svg>
-              Google
-            </button>
-            <button
-              onClick={() => handleOAuth('discord')}
-              className="w-full inline-flex justify-center items-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-            >
-              <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
-                <path fill="#5865F2" d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419-.019 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1568 2.4189Z"/>
-              </svg>
-              Discord
-            </button>
+          <div className="relative flex justify-center">
+            <span className="px-3 bg-[var(--briefing-bg)] br-eyebrow">{t('auth.or')}</span>
           </div>
         </div>
 
-        <div className="mt-6 text-center">
+        {/* OAuth */}
+        <div className="grid grid-cols-2 gap-3">
           <button
-            onClick={switchMode}
-            className="text-indigo-600 hover:text-indigo-500"
+            onClick={() => handleOAuth('google')}
+            className="flex items-center justify-center gap-2 border border-[var(--rule)] rounded-[6px] py-2.5 text-sm text-[var(--ink-2)] hover:border-[var(--ink-2)] hover:text-[var(--ink-1)] bg-white dark:bg-zinc-900 transition-colors"
           >
-            {mode === 'login' 
-              ? "Don't have an account? Sign up" 
-              : "Already have an account? Sign in"
-            }
+            <svg width="16" height="16" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Google
+          </button>
+          <button
+            onClick={() => handleOAuth('discord')}
+            className="flex items-center justify-center gap-2 border border-[var(--rule)] rounded-[6px] py-2.5 text-sm text-[var(--ink-2)] hover:border-[var(--ink-2)] hover:text-[var(--ink-1)] bg-white dark:bg-zinc-900 transition-colors"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24">
+              <path fill="#5865F2" d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.078.037c-.211.375-.445.864-.608 1.249a18.27 18.27 0 0 0-5.487 0 12.6 12.6 0 0 0-.617-1.249.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.319 13.58.099 18.058a.082.082 0 0 0 .031.056 19.9 19.9 0 0 0 5.993 3.03.077.077 0 0 0 .084-.028c.462-.63.873-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.1 13.1 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .078-.01c3.928 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .079.01c.12.099.246.198.372.292a.077.077 0 0 1-.006.128c-.598.349-1.22.645-1.873.891a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.84 19.84 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.06.06 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.095 2.157 2.42 0 1.333-.955 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.095 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+            </svg>
+            Discord
+          </button>
+        </div>
+
+        {/* Switch mode */}
+        <div className="text-center mt-6">
+          <button onClick={switchMode} className="br-eyebrow hover:text-[var(--ink-1)] transition-colors">
+            {mode === 'login' ? t('auth.switch.toSignup') : t('auth.switch.toLogin')}
           </button>
         </div>
       </div>
     </div>
   );
-} 
+}

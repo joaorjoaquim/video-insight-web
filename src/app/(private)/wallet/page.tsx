@@ -1,501 +1,277 @@
 "use client";
-import {
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  BarChartIcon,
-  BuildingIcon,
-  CreditCardIcon,
-  DiamondIcon,
-  RocketIcon,
-  StarIcon,
-  VideoIcon,
-  Wallet01Icon,
-} from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { useState } from "react";
 import PrivateHeader from "../../../components/layout/private-header";
-import { Button } from "../../../components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogTitle,
-  DialogTrigger,
 } from "../../../components/ui/dialog";
 import { useAppSelector } from "../../../core/hooks";
 import { useCredits } from "../../../lib/api/hooks";
+import { useT } from "../../../lib/i18n";
+import { Reveal } from "../../../components/ui/reveal";
 
 const creditPackages = [
-  {
-    id: "starter",
-    name: "Starter Package",
-    amount: 10,
-    price: 9.9,
-    per: 0.99,
-    icon: RocketIcon,
-    color: "bg-blue-500",
-    bgColor: "bg-blue-50",
-    textColor: "text-blue-600",
-  },
-  {
-    id: "popular",
-    name: "Popular Package",
-    amount: 25,
-    price: 19.75,
-    per: 0.79,
-    icon: StarIcon,
-    color: "bg-purple-500",
-    bgColor: "bg-purple-50",
-    textColor: "text-purple-600",
-    recommended: true,
-  },
-  {
-    id: "pro",
-    name: "Pro Package",
-    amount: 50,
-    price: 34.5,
-    per: 0.69,
-    icon: DiamondIcon,
-    color: "bg-indigo-500",
-    bgColor: "bg-indigo-50",
-    textColor: "text-indigo-600",
-  },
-  {
-    id: "enterprise",
-    name: "Enterprise Package",
-    amount: 100,
-    price: 59.0,
-    per: 0.59,
-    icon: BuildingIcon,
-    color: "bg-green-500",
-    bgColor: "bg-green-50",
-    textColor: "text-green-600",
-  },
+  { id: "starter",    name: "STARTER",    amount: 10,  price: 9.90,  per: 0.99 },
+  { id: "popular",    name: "POPULAR",    amount: 25,  price: 19.75, per: 0.79, recommended: true },
+  { id: "pro",        name: "PRO",        amount: 50,  price: 34.50, per: 0.69 },
+  { id: "enterprise", name: "ENTERPRISE", amount: 100, price: 59.00, per: 0.59 },
 ];
 
 export default function WalletPage() {
+  const t = useT();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>("popular");
   const [filterType, setFilterType] = useState("all");
   const [filterPeriod, setFilterPeriod] = useState("30days");
 
-  // Get user data from Redux
   const { user } = useAppSelector((state: any) => state.auth);
-
-  // Fetch credits and transactions
   const { data: creditsData, isLoading, error } = useCredits();
 
-  const credits = creditsData?.credits || user?.credits || 0;
+  const credits = creditsData?.credits ?? user?.credits ?? 0;
   const transactions = creditsData?.transactions || [];
 
-  // Calculate estimated submissions left (assuming 6 credits per video)
-  const estimatedSubmissions = Math.round(credits / 6);
-
-  // Get last transaction date
-  const lastTransaction = transactions.length > 0 ? transactions[0] : null;
-  const lastTransactionDate = lastTransaction
-    ? new Date(lastTransaction.createdAt).toLocaleDateString("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      })
-    : null;
-
-  // Calculate total credits purchased vs used
   const totalPurchased = transactions
-    .filter((t) => t.type === "purchase")
-    .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+    .filter((tx: any) => tx.type === "purchase")
+    .reduce((sum: number, tx: any) => sum + Math.abs(tx.amount), 0);
 
   const totalUsed = transactions
-    .filter((t) => t.type === "spend")
-    .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+    .filter((tx: any) => tx.type === "spend")
+    .reduce((sum: number, tx: any) => sum + Math.abs(tx.amount), 0);
 
-  const formatAmount = (amount: number) => {
-    const sign = amount >= 0 ? "+" : "";
-    return `${sign}${amount}`;
-  };
+  const estimatedVideos = Math.round(credits / 6);
 
-  const getActivityIcon = (type: string) => {
-    const baseClasses = "w-8 h-8 rounded-full flex items-center justify-center";
+  const lastTransaction = transactions.length > 0 ? transactions[0] : null;
+  const lastTransactionDate = lastTransaction
+    ? new Date(lastTransaction.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+    : null;
 
-    switch (type) {
-      case "spend":
-        return (
-          <div className={`${baseClasses} bg-red-100`}>
-            <HugeiconsIcon icon={VideoIcon} className="w-4 h-4 text-red-600" />
-          </div>
-        );
-      case "purchase":
-        return (
-          <div className={`${baseClasses} bg-green-100`}>
-            <HugeiconsIcon
-              icon={CreditCardIcon}
-              className="w-4 h-4 text-green-600"
-            />
-          </div>
-        );
-      case "refund":
-        return (
-          <div className={`${baseClasses} bg-yellow-100`}>
-            <HugeiconsIcon
-              icon={Wallet01Icon}
-              className="w-4 h-4 text-yellow-600"
-            />
-          </div>
-        );
-      default:
-        return (
-          <div className={`${baseClasses} bg-gray-100`}>
-            <HugeiconsIcon
-              icon={Wallet01Icon}
-              className="w-4 h-4 text-gray-600"
-            />
-          </div>
-        );
-    }
-  };
-
-  const getActivityDescription = (transaction: any) => {
-    switch (transaction.type) {
-      case "spend":
-        return transaction.description || "Submitted video";
-      case "purchase":
-        return transaction.description || "Purchased credits";
-      case "refund":
-        return transaction.description || "Refunded credits";
-      default:
-        return transaction.description || "Transaction";
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    const baseClasses = "px-2 py-1 rounded-full text-xs font-medium";
-
-    switch (status) {
-      case "completed":
-      case "successful":
-        return (
-          <span className={`${baseClasses} bg-green-100 text-green-700`}>
-            {status === "completed" ? "Completed" : "Successful"}
-          </span>
-        );
-      case "pending":
-        return (
-          <span className={`${baseClasses} bg-orange-100 text-orange-700`}>
-            Pending
-          </span>
-        );
-      case "failed":
-        return (
-          <span className={`${baseClasses} bg-red-100 text-red-700`}>
-            Failed
-          </span>
-        );
-      default:
-        return (
-          <span className={`${baseClasses} bg-gray-100 text-gray-700`}>
-            {status}
-          </span>
-        );
-    }
-  };
-
-  const formatActivityDate = (dateString: string) => {
-    if (!dateString) return "";
-
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      });
-    } catch (error) {
-      return "";
-    }
-  };
-
-  const filteredTransactions = transactions.filter((transaction) => {
-    if (filterType !== "all" && transaction.type !== filterType) return false;
-
+  const filteredTransactions = transactions.filter((tx: any) => {
+    if (filterType !== "all" && tx.type !== filterType) return false;
     if (filterPeriod === "30days") {
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      return new Date(transaction.createdAt) >= thirtyDaysAgo;
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - 30);
+      return new Date(tx.createdAt) >= cutoff;
     }
-
     return true;
   });
 
+  const formatDate = (dateString: string) => {
+    try {
+      return new Date(dateString).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    } catch { return ""; }
+  };
+
+  const typeColor = (amount: number) =>
+    amount >= 0 ? "text-[var(--led-completed)]" : "text-[var(--play-700)]";
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#f8f6fc] to-white dark:from-zinc-950 dark:to-zinc-900">
+    <div className="min-h-screen bg-[var(--briefing-bg)]">
       <PrivateHeader />
-      <main className="max-w-6xl mx-auto px-4 pt-8 pb-16">
-        {/* Current Balance Section */}
-        <section className="mb-8">
-          <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg p-6">
-            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-              <div className="flex items-center gap-4">
-                <div className="bg-indigo-100 dark:bg-indigo-900 p-4 rounded-full">
-                  <HugeiconsIcon
-                    icon={Wallet01Icon}
-                    className="text-3xl text-indigo-600 dark:text-indigo-300"
-                  />
-                </div>
-                <div>
-                  <div className="text-zinc-500 text-sm font-medium">
-                    Current Balance
-                  </div>
-                  <div className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">
-                    {credits} credits
-                  </div>
-                  {lastTransactionDate && (
-                    <div className="text-sm text-zinc-400">
-                      Last transaction: {lastTransactionDate}
-                    </div>
-                  )}
-                </div>
+      <main className="max-w-5xl mx-auto px-4 pt-14 pb-24" style={{ fontFamily: "var(--font-sans-br, system-ui, sans-serif)" }}>
+        {/* Balance section */}
+        <Reveal>
+          <section className="grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-8 mb-14">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <span className="logo-bars"><i/><i/><i/></span>
+                <span className="br-eyebrow">§ 01</span>
               </div>
+              <div className="br-eyebrow">{t("wallet.balance.section")}</div>
+            </div>
+            <div>
+              <div className="br-eyebrow mb-4">{t("wallet.balance.current")}</div>
+              <div
+                style={{ fontFamily: "var(--font-display-br, Georgia, serif)", fontSize: "clamp(4rem, 10vw, 6rem)", lineHeight: 1, letterSpacing: "-0.03em", fontStyle: "italic", color: "var(--play)" }}
+                className="mb-3"
+              >
+                {credits}
+                <span className="text-xl ml-2 not-italic text-[var(--ink-3)]" style={{ fontFamily: "var(--font-sans-br, system-ui)" }}>{t("wallet.stats.credits")}</span>
+              </div>
+              <div className="br-eyebrow mb-6">
+                {lastTransactionDate && `${t("wallet.balance.lastTx")} · ${lastTransactionDate} · `}~{estimatedVideos} {t("wallet.balance.videosLeft")}
+              </div>
+              <button
+                onClick={() => setDialogOpen(true)}
+                className="flex items-center gap-2 px-5 py-3 text-sm font-semibold bg-[var(--play)] hover:bg-[var(--play-700)] text-white rounded-[6px] transition-colors"
+              >
+                {t("wallet.balance.buyBtn")}
+                <span className="inline-block w-0 h-0 border-t-[5px] border-t-transparent border-b-[5px] border-b-transparent border-l-[8px] border-l-white" />
+              </button>
 
-              <div className="flex flex-col items-end gap-4">
-                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 flex items-center gap-2">
-                  <HugeiconsIcon
-                    icon={BarChartIcon}
-                    className="w-4 h-4 text-blue-600"
-                  />
-                  <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
-                    Estimated submissions left ~{estimatedSubmissions} videos
-                  </span>
-                </div>
-
-                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg">
-                      Buy Credits
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-4xl lg:max-w-5xl w-full max-h-[95vh] overflow-y-auto">
-                    <DialogTitle className="text-xl font-bold mb-6">
-                      Credit Packages
-                    </DialogTitle>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                      {creditPackages.map((pkg) => {
-                        const IconComponent = pkg.icon;
-                        return (
-                          <button
-                            key={pkg.id}
-                            className={`border rounded-xl p-4 flex flex-col items-center gap-3 transition-all ${
-                              selected === pkg.id
-                                ? "border-purple-500 ring-2 ring-purple-200 bg-purple-50"
-                                : "border-zinc-200 dark:border-zinc-800 hover:border-purple-300"
-                            } ${
-                              pkg.recommended
-                                ? "bg-purple-50 dark:bg-purple-900/20"
-                                : ""
-                            }`}
-                            onClick={() => setSelected(pkg.id)}
-                          >
-                            {pkg.recommended && (
-                              <span className="text-xs text-purple-600 font-semibold bg-purple-100 px-2 py-1 rounded-full">
-                                RECOMMENDED
-                              </span>
-                            )}
-                            <div
-                              className={`w-12 h-12 ${pkg.bgColor} rounded-full flex items-center justify-center`}
-                            >
-                              <HugeiconsIcon
-                                icon={IconComponent}
-                                className={`w-6 h-6 ${pkg.textColor}`}
-                              />
-                            </div>
-                            <div className="text-center">
-                              <div className="font-bold text-lg text-zinc-900 dark:text-zinc-100">
-                                {pkg.name}
-                              </div>
-                              <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
-                                {pkg.amount} credits
-                              </div>
-                              <div className="text-zinc-500 text-sm">
-                                ${pkg.per.toFixed(2)} per credit
-                              </div>
-                              <div className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mt-2">
-                                ${pkg.price.toFixed(2)}
-                              </div>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                    <Button
-                      className="w-full bg-purple-600 hover:bg-purple-700"
-                      disabled={selected === null}
-                      onClick={() => setDialogOpen(false)}
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-8 mt-10 pt-8 border-t border-[var(--rule)]">
+                {[
+                  { label: t("wallet.stats.purchased"), value: totalPurchased, accent: false },
+                  { label: t("wallet.stats.used"),      value: totalUsed,      accent: false },
+                  { label: t("wallet.stats.balance"),   value: credits,        accent: true },
+                ].map((stat, i) => (
+                  <div key={i}>
+                    <div className="br-eyebrow mb-2">{stat.label}</div>
+                    <div
+                      style={{ fontFamily: "var(--font-display-br, Georgia, serif)", fontSize: "2.5rem", lineHeight: 1, letterSpacing: "-0.02em", fontStyle: stat.accent ? "italic" : "normal", color: stat.accent ? "var(--play)" : "var(--ink-1)" }}
                     >
-                      Buy Now
-                    </Button>
-                  </DialogContent>
-                </Dialog>
+                      {stat.value}
+                    </div>
+                    <div className="br-eyebrow mt-1">{t("wallet.stats.credits")}</div>
+                  </div>
+                ))}
               </div>
             </div>
+          </section>
+        </Reveal>
 
-            {/* Credits Summary */}
-            <div className="mt-6 pt-6 border-t border-zinc-200 dark:border-zinc-700">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">
-                    {totalPurchased}
-                  </div>
-                  <div className="text-sm text-zinc-500">Total Purchased</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-red-600">
-                    {totalUsed}
-                  </div>
-                  <div className="text-sm text-zinc-500">Total Used</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-indigo-600">
-                    {credits}
-                  </div>
-                  <div className="text-sm text-zinc-500">Current Balance</div>
-                </div>
+        <hr className="border-[var(--rule)] mb-14" />
+
+        {/* Transactions */}
+        <Reveal delay={1}>
+          <section className="grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-8">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <span className="logo-bars"><i/><i/><i/></span>
+                <span className="br-eyebrow">§ 02</span>
               </div>
+              <div className="br-eyebrow">{t("wallet.ledger.section")}</div>
             </div>
-          </div>
-        </section>
-
-        {/* Transaction History */}
-        <section>
-          <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg">
-            <div className="p-4 sm:p-6 border-b border-zinc-200 dark:border-zinc-700">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-                  Transaction History
+            <div>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <h2
+                  style={{ fontFamily: "var(--font-display-br, Georgia, serif)", fontSize: "1.4rem", letterSpacing: "-0.01em" }}
+                  className="text-[var(--ink-1)]"
+                >
+                  {t("wallet.ledger.headline")}
                 </h2>
-                <div className="flex flex-col sm:flex-row gap-2">
+                <div className="flex gap-2">
                   <select
                     value={filterType}
                     onChange={(e) => setFilterType(e.target.value)}
-                    className="px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm bg-white dark:bg-zinc-800"
+                    className="border border-[var(--rule)] rounded-[6px] px-3 py-1.5 text-[11px] tracking-[0.1em] bg-white dark:bg-zinc-900 text-[var(--ink-2)] focus:outline-none"
+                    style={{ fontFamily: "var(--font-mono-br, monospace)" }}
                   >
-                    <option value="all">All Types</option>
-                    <option value="spend">Spent</option>
-                    <option value="purchase">Purchased</option>
-                    <option value="refund">Refunded</option>
+                    <option value="all">{t("wallet.ledger.allTypes")}</option>
+                    <option value="spend">{t("wallet.ledger.spent")}</option>
+                    <option value="purchase">{t("wallet.ledger.purchased")}</option>
+                    <option value="refund">{t("wallet.ledger.refunded")}</option>
                   </select>
                   <select
                     value={filterPeriod}
                     onChange={(e) => setFilterPeriod(e.target.value)}
-                    className="px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm bg-white dark:bg-zinc-800"
+                    className="border border-[var(--rule)] rounded-[6px] px-3 py-1.5 text-[11px] tracking-[0.1em] bg-white dark:bg-zinc-900 text-[var(--ink-2)] focus:outline-none"
+                    style={{ fontFamily: "var(--font-mono-br, monospace)" }}
                   >
-                    <option value="all">All Time</option>
-                    <option value="30days">Last 30 days</option>
+                    <option value="all">{t("wallet.ledger.allTime")}</option>
+                    <option value="30days">{t("wallet.ledger.last30")}</option>
                   </select>
                 </div>
               </div>
+
+              {isLoading ? (
+                <div className="flex flex-col items-center gap-3 py-12">
+                  <div className="bars-loader"><i/><i/><i/><i/></div>
+                  <span className="br-eyebrow">{t("wallet.ledger.loading")}</span>
+                </div>
+              ) : error ? (
+                <p className="text-[var(--led-failed)] text-sm py-8">{t("wallet.ledger.error")}</p>
+              ) : filteredTransactions.length === 0 ? (
+                <div className="text-center py-12 border border-dashed border-[var(--rule)] rounded-[10px]">
+                  <div className="br-eyebrow mb-2">{t("wallet.ledger.empty.title")}</div>
+                  <p className="text-[var(--ink-2)] text-sm">{t("wallet.ledger.empty.sub")}</p>
+                </div>
+              ) : (
+                <table className="w-full text-sm border-collapse">
+                  <thead>
+                    <tr className="border-b border-[var(--rule)]">
+                      {[t("wallet.ledger.col.type"), t("wallet.ledger.col.description"), t("wallet.ledger.col.amount"), t("wallet.ledger.col.status")].map((h, i) => (
+                        <th key={i} className={`br-eyebrow py-2 text-left font-normal ${i >= 2 ? "text-right" : ""}`}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredTransactions.map((tx: any) => (
+                      <tr key={tx.id} className="border-b border-[var(--rule-soft)] hover:bg-[var(--rule-soft)] transition-colors">
+                        <td className="py-3 pr-4">
+                          <span className={`br-eyebrow ${typeColor(tx.amount)}`}>{tx.type?.toUpperCase()}</span>
+                        </td>
+                        <td className="py-3 pr-4">
+                          <div className="text-[var(--ink-1)] text-sm">{tx.description || (tx.type === "spend" ? "Video submission" : tx.type === "purchase" ? "Credit purchase" : "Credit refund")}</div>
+                          <div className="br-eyebrow mt-0.5">{formatDate(tx.createdAt)}</div>
+                        </td>
+                        <td className={`py-3 pr-4 text-right font-medium tabular-nums ${typeColor(tx.amount)}`} style={{ fontFamily: "var(--font-mono-br, monospace)", fontSize: 13 }}>
+                          {tx.amount >= 0 ? "+" : "–"}{Math.abs(tx.amount)} cr
+                        </td>
+                        <td className="py-3 text-right">
+                          <span className="led completed">completed</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+
+              {filteredTransactions.length > 0 && (
+                <div className="br-eyebrow mt-4">
+                  {t("wallet.ledger.showing")} {filteredTransactions.length} {t("wallet.ledger.of")} {transactions.length} {t("wallet.ledger.transactions")}
+                </div>
+              )}
             </div>
-
-            {isLoading ? (
-              <div className="p-12 text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-                <p className="text-zinc-500">Loading transactions...</p>
-              </div>
-            ) : error ? (
-              <div className="p-12 text-center">
-                <p className="text-red-500 mb-2">Failed to load transactions</p>
-                <p className="text-sm text-zinc-500">Please try again later</p>
-              </div>
-            ) : filteredTransactions.length === 0 ? (
-              <div className="p-12 text-center">
-                <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <HugeiconsIcon
-                    icon={Wallet01Icon}
-                    className="w-8 h-8 text-zinc-400"
-                  />
-                </div>
-                <p className="text-zinc-500 font-medium mb-2">
-                  No transactions yet
-                </p>
-                <p className="text-sm text-zinc-400">
-                  Your transaction history will appear here once you start using
-                  credits
-                </p>
-              </div>
-            ) : (
-              <div className="divide-y divide-zinc-200 dark:divide-zinc-700">
-                {filteredTransactions.map((transaction) => (
-                  <div
-                    key={transaction.id}
-                    className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
-                  >
-                    <div className="flex items-center gap-4 flex-1">
-                      {getActivityIcon(transaction.type)}
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-zinc-900 dark:text-zinc-100 truncate">
-                          {getActivityDescription(transaction)}
-                        </div>
-                        <div className="text-sm text-zinc-500">
-                          {transaction.video?.title &&
-                            transaction.video?.title + ` - `}
-                          {formatActivityDate(transaction.createdAt)}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                      <div className="text-right">
-                        <div
-                          className={`font-bold text-lg ${
-                            transaction.amount >= 0
-                              ? "text-green-600"
-                              : "text-red-600"
-                          }`}
-                        >
-                          {formatAmount(transaction.amount)} credits
-                        </div>
-                      </div>
-                      <div className="flex justify-end sm:justify-start">
-                        {getStatusBadge(transaction.status)}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {filteredTransactions.length > 0 && (
-              <div className="p-4 border-t border-zinc-200 dark:border-zinc-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="text-sm text-zinc-500 text-center sm:text-left">
-                  Showing {filteredTransactions.length} of {transactions.length}{" "}
-                  transactions
-                </div>
-                <div className="flex items-center justify-center gap-2">
-                  <Button variant="outline" size="sm" disabled>
-                    <HugeiconsIcon icon={ArrowLeftIcon} className="w-4 h-4" />
-                  </Button>
-                  <div className="flex gap-1">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-8 h-8 p-0 bg-purple-100 text-purple-700 border-purple-200"
-                    >
-                      1
-                    </Button>
-                    <Button variant="outline" size="sm" className="w-8 h-8 p-0">
-                      2
-                    </Button>
-                    <Button variant="outline" size="sm" className="w-8 h-8 p-0">
-                      3
-                    </Button>
-                  </div>
-                  <Button variant="outline" size="sm">
-                    <HugeiconsIcon icon={ArrowRightIcon} className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
-        </section>
+          </section>
+        </Reveal>
       </main>
+
+      {/* Buy credits dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-2xl bg-[var(--briefing-bg)] border border-[var(--rule)] rounded-[14px] p-8">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="logo-bars"><i/><i/><i/></span>
+            <span className="br-eyebrow">§ {t("wallet.modal.section")}</span>
+          </div>
+          <DialogTitle
+            style={{ fontFamily: "var(--font-display-br, Georgia, serif)", fontSize: "1.75rem", letterSpacing: "-0.012em" }}
+            className="text-[var(--ink-1)] mb-1"
+          >
+            {t("wallet.modal.headline")} <span className="ital-bar">{t("wallet.modal.headlineAccent")}</span>.
+          </DialogTitle>
+          <p className="br-eyebrow mb-7">{t("wallet.modal.sub")}</p>
+
+          <div className="stagger-list grid grid-cols-2 md:grid-cols-4 gap-3 mb-7">
+            {creditPackages.map((pkg) => (
+              <button
+                key={pkg.id}
+                onClick={() => setSelected(pkg.id)}
+                className={`relative border rounded-[10px] p-4 flex flex-col gap-1.5 text-left transition-colors ${
+                  selected === pkg.id
+                    ? "border-[var(--bars)] bg-white dark:bg-zinc-900"
+                    : "border-[var(--rule)] bg-white dark:bg-zinc-900 hover:border-[var(--ink-2)]"
+                }`}
+              >
+                {pkg.recommended && (
+                  <div className="absolute -top-2.5 left-3 bg-[var(--play)] text-white text-[9px] font-medium tracking-[0.1em] px-2 py-0.5 rounded-[3px]" style={{ fontFamily: "var(--font-mono-br, monospace)" }}>
+                    {t("wallet.modal.recommended")}
+                  </div>
+                )}
+                <div className="br-eyebrow">{pkg.name}</div>
+                <div style={{ fontFamily: "var(--font-display-br, Georgia, serif)", fontSize: "1.6rem", lineHeight: 1 }} className="text-[var(--ink-1)]">
+                  {pkg.amount}
+                  <small className="text-xs ml-1" style={{ fontFamily: "var(--font-sans-br)" }}>cr</small>
+                </div>
+                <div className="br-eyebrow">${pkg.per.toFixed(2)}{t("wallet.modal.perCredit")}</div>
+                <div className="mt-auto pt-2 border-t border-[var(--rule)]">
+                  <div style={{ fontFamily: "var(--font-display-br, Georgia, serif)", fontSize: "1.2rem" }} className="text-[var(--ink-1)]">${pkg.price.toFixed(2)}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+
+          <button
+            disabled={!selected}
+            className="w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold bg-[var(--play)] hover:bg-[var(--play-700)] disabled:opacity-40 text-white rounded-[6px] transition-colors"
+            onClick={() => setDialogOpen(false)}
+          >
+            {t("wallet.modal.buyNow")}
+            <span className="inline-block w-0 h-0 border-t-[5px] border-t-transparent border-b-[5px] border-b-transparent border-l-[8px] border-l-white" />
+          </button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

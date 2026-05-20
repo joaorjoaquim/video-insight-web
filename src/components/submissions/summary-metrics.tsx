@@ -9,11 +9,15 @@ interface SummaryMetricsProps {
 
 export default function SummaryMetrics({ metrics }: SummaryMetricsProps) {
   return (
-    <div className="bg-zinc-50 dark:bg-zinc-900 rounded-lg p-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-center text-sm">
+    <div>
       {metrics.map((metric, index) => (
-        <div key={index}>
-          <div className="text-zinc-500 mb-1">{metric.label}</div>
-          <div className="font-semibold text-zinc-900 dark:text-zinc-100">{metric.value}</div>
+        <div key={index} className="flex justify-between items-baseline py-3 border-b border-[var(--rule-soft)]">
+          <span className="br-eyebrow">{metric.label}</span>
+          <span
+            style={{ fontFamily: "var(--font-display-br, Georgia, serif)", fontSize: "1.5rem", letterSpacing: "-0.01em", color: "var(--ink-1)" }}
+          >
+            {metric.value}
+          </span>
         </div>
       ))}
     </div>

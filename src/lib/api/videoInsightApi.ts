@@ -35,6 +35,7 @@ export interface VideoResponse {
   title: string;
   thumbnail: string;
   duration: number;
+  platform?: string;
   downloadUrl: string;
   transcriptionId: string;
   transcription: string; // This is a string, not an array

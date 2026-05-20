@@ -5,8 +5,6 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "../ui/accordion";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { HelpCircleIcon } from "@hugeicons/core-free-icons";
 
 const FAQ_ITEMS = [
   {
@@ -123,36 +121,24 @@ const renderAnswer = (answer: string) => {
 
 export function FAQAccordion() {
   return (
-    <div className="w-full max-w-5xl mx-auto">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">
-          Frequently Asked Questions
-        </h2>
-        <p className="text-zinc-600 dark:text-zinc-300">
-          Everything you need to know about SummaryVideos
-        </p>
-      </div>
-
-      <Accordion type="single" collapsible className="w-full space-y-2">
-        {FAQ_ITEMS.map((item, idx) => (
+    <div className="w-full border-t border-[var(--rule)]">
+      <Accordion type="single" collapsible className="w-full">
+        {FAQ_ITEMS.map((item) => (
           <AccordionItem
             value={item.question}
             key={item.question}
-            className="border border-zinc-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-zinc-900 overflow-hidden"
+            className="border-b border-[var(--rule)]"
           >
-            <AccordionTrigger className="text-left px-6 py-4 hover:bg-zinc-50/50 dark:hover:bg-zinc-800/50 transition-colors">
-              <div className="flex items-center flex-1">
-                <HugeiconsIcon
-                  icon={HelpCircleIcon}
-                  className="text-lg text-muted-foreground mr-3 flex-shrink-0"
-                />
-                <span className="text-base font-medium text-zinc-900 dark:text-zinc-100">
-                  {item.question}
-                </span>
-              </div>
+            <AccordionTrigger className="text-left py-5 hover:no-underline group">
+              <span
+                style={{ fontFamily: "var(--font-display-br, Georgia, serif)", fontSize: "1.1rem", letterSpacing: "-0.01em" }}
+                className="text-[var(--ink-1)] flex-1 text-left"
+              >
+                {item.question}
+              </span>
             </AccordionTrigger>
-            <AccordionContent className="px-6 pb-6">
-              <div className="text-zinc-600 dark:text-zinc-300 text-sm leading-relaxed">
+            <AccordionContent className="pb-6">
+              <div className="text-[var(--ink-2)] text-sm leading-relaxed max-w-[40rem]">
                 {renderAnswer(item.answer)}
               </div>
             </AccordionContent>

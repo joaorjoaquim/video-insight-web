@@ -1,8 +1,6 @@
 "use client";
 import {
-  ArrowDownIcon,
   Cancel01Icon,
-  CreditCardIcon,
   Github01Icon,
   Logout01Icon,
   Menu01Icon,
@@ -16,7 +14,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../core/hooks";
 import { fetchProfile, logout } from "../../core/slices/authSlice";
 import { cn } from "../../lib/utils";
-import { Button } from "../ui/button";
+import { useI18n, useT } from "../../lib/i18n";
 
 export default function PrivateHeader() {
   const [theme, setTheme] = useState("light");
@@ -26,190 +24,158 @@ export default function PrivateHeader() {
   const router = useRouter();
   const pathname = usePathname();
   const dispatch = useAppDispatch();
+  const { locale, setLocale } = useI18n();
+  const t = useT();
 
-  // Get user data from Redux
   const { user, isAuthenticated } = useAppSelector((state: any) => state.auth);
 
-  // Auto-refetch profile every 5 minutes
+  // Read persisted theme on mount
+  useEffect(() => {
+    const saved = typeof window !== "undefined" ? localStorage.getItem("theme") : null;
+    if (saved === "dark") {
+      setTheme("dark");
+      document.documentElement.classList.add("dark");
+    } else {
+      setTheme("light");
+      document.documentElement.classList.remove("dark");
+    }
+  }, []);
+
   useEffect(() => {
     if (isAuthenticated) {
-      // Initial fetch
       dispatch(fetchProfile());
-
-      // Set up interval for refetching every 5 minutes
-      const interval = setInterval(() => {
-        dispatch(fetchProfile());
-      }, 5 * 60 * 1000); // 5 minutes
-
+      const interval = setInterval(() => dispatch(fetchProfile()), 5 * 60 * 1000);
       return () => clearInterval(interval);
     }
   }, [dispatch, isAuthenticated]);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setDropdownOpen(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const toggleTheme = () => {
+    const next = theme === "light" ? "dark" : "light";
+    setTheme(next);
+    if (next === "dark") {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  };
 
   const handleLogout = () => {
     dispatch(logout());
     router.push("/");
   };
 
-  // Fallback avatar if no avatarUrl
   const getAvatarUrl = () => {
-    if (user?.avatarUrl) {
-      return user.avatarUrl;
-    }
-    // Generate a placeholder avatar based on user's name
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(
-      user?.name || user?.email || "User"
-    )}&background=6366f1&color=fff&size=128`;
+    if (user?.avatarUrl) return user.avatarUrl;
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || user?.email || "User")}&background=7E1DFD&color=fff&size=128`;
   };
 
-  return (
-    <header className="sticky top-0 z-30 w-full backdrop-blur bg-white/80 dark:bg-zinc-950/80 border-b border-zinc-200 dark:border-zinc-800 shadow-sm">
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-2 md:py-0 h-16">
-        {/* Logo + App Name */}
-        <div className="flex items-center gap-2">
-          <Link
-            href="/dashboard"
-            className="flex items-center gap-2 font-bold text-xl text-indigo-700 dark:text-indigo-300"
-          >
-            <div className="flex items-center space-x-3">
-              <img
-                src="/summary_videos_logo.png"
-                alt="SummaryVideos Logo"
-                className="h-8 w-auto"
-              />
-              <div className="text-black text-2xl font-bold">SummaryVideos</div>
-            </div>
-          </Link>
-        </div>
+  const navLinkClass = (path: string) =>
+    cn(
+      "font-[var(--font-mono-br,monospace)] text-[11px] font-medium tracking-[0.12em] uppercase transition-colors",
+      pathname === path
+        ? "text-[var(--play)] border-b-2 border-[var(--play)] pb-[2px]"
+        : "text-[var(--ink-2)] hover:text-[var(--ink-1)] dark:text-zinc-400 dark:hover:text-zinc-100"
+    );
 
-        {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-5 md:gap-10">
-          <Link
-            href="/dashboard"
-            className={cn(
-              "font-medium transition-colors",
-              pathname === "/dashboard"
-                ? "text-indigo-600 dark:text-indigo-400"
-                : "text-zinc-700 dark:text-zinc-200 hover:text-indigo-600"
-            )}
+  return (
+    <header className="sticky top-0 z-30 w-full bg-[var(--briefing-bg)] dark:bg-zinc-950 border-b border-[var(--rule)]">
+      <div className="max-w-7xl mx-auto flex items-center justify-between px-4 h-14">
+        {/* Brand */}
+        <Link href="/dashboard" className="flex items-center gap-2">
+          <img src="/summary_videos_logo.png" alt="SummaryVideos" className="h-7 w-auto" />
+          <span
+            style={{ fontFamily: "var(--font-display-br, Georgia, serif)" }}
+            className="text-[var(--ink-1)] dark:text-zinc-100 text-lg"
           >
-            Dashboard
+            SummaryVideos
+          </span>
+        </Link>
+
+        {/* Desktop nav */}
+        <nav className="hidden md:flex items-center gap-7">
+          <Link href="/dashboard" className={navLinkClass("/dashboard")}>
+            {t("nav.dashboard")}
           </Link>
-          <Link
-            href="/wallet"
-            className={cn(
-              "flex items-center gap-1 font-medium transition-colors",
-              pathname === "/wallet"
-                ? "text-indigo-600 dark:text-indigo-400"
-                : "text-zinc-700 dark:text-zinc-200 hover:text-indigo-600"
-            )}
-          >
-            <HugeiconsIcon icon={CreditCardIcon} className="text-lg mr-1" />
-            <span>{user?.credits || 0} Credits</span>
+          <Link href="/wallet" className={navLinkClass("/wallet")}>
+            {t("nav.wallet")}
+            <span className="ml-1 text-[var(--ink-3)]">/ {user?.credits ?? 0}</span>
           </Link>
           <a
             href="https://github.com/joaorjoaquim/video-insight-web"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 text-zinc-700 dark:text-zinc-200 hover:text-indigo-600 font-medium transition-colors"
+            className="font-[var(--font-mono-br,monospace)] text-[11px] font-medium tracking-[0.12em] uppercase text-[var(--ink-2)] hover:text-[var(--ink-1)] dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors flex items-center gap-1"
           >
-            <HugeiconsIcon icon={Github01Icon} className="text-lg mr-1" />
-            GitHub
+            <HugeiconsIcon icon={Github01Icon} className="text-base" />
+            {t("nav.github")}
           </a>
-          {/* Theme Toggle */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-            aria-label="Toggle theme"
+
+          {/* Language toggle */}
+          <button
+            onClick={() => setLocale(locale === "en" ? "pt-br" : "en")}
+            className="font-[var(--font-mono-br,monospace)] text-[11px] font-medium tracking-[0.12em] uppercase text-[var(--ink-2)] hover:text-[var(--play)] dark:text-zinc-400 dark:hover:text-[var(--play)] transition-colors border border-[var(--rule)] rounded px-1.5 py-0.5"
+            aria-label={t("lang.toggle")}
           >
-            {theme === "light" ? (
-              <HugeiconsIcon icon={Moon01Icon} className="text-xl" />
-            ) : (
-              <HugeiconsIcon icon={Sun01Icon} className="text-xl" />
-            )}
-          </Button>
-          {/* Profile Dropdown */}
+            {t("lang.toggle")}
+          </button>
+
+          {/* Theme toggle */}
+          <button
+            onClick={toggleTheme}
+            aria-label={t("nav.toggleTheme")}
+            className="text-[var(--ink-2)] hover:text-[var(--ink-1)] dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors"
+          >
+            <HugeiconsIcon icon={theme === "light" ? Moon01Icon : Sun01Icon} className="text-base" />
+          </button>
+
+          {/* Profile dropdown */}
           <div className="relative" ref={dropdownRef}>
             <button
-              className="flex items-center gap-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg p-1 transition-colors"
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
               onClick={() => setDropdownOpen(!dropdownOpen)}
             >
               <img
                 src={getAvatarUrl()}
                 alt={user?.name || user?.email || "User"}
-                className="w-8 h-8 rounded-full border-2 border-indigo-400"
-              />
-              <HugeiconsIcon
-                icon={ArrowDownIcon}
-                className={cn(
-                  "text-sm transition-transform",
-                  dropdownOpen && "rotate-180"
-                )}
+                className="w-7 h-7 rounded-full border border-[var(--bars)]"
               />
             </button>
 
-            {/* Dropdown Menu */}
             {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-zinc-900 rounded-lg shadow-lg border border-zinc-200 dark:border-zinc-700 py-1 z-50">
-                {/* User Info */}
-                <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-700">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={getAvatarUrl()}
-                      alt={user?.name || user?.email || "User"}
-                      className="w-10 h-10 rounded-full flex-shrink-0"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm truncate">
-                        {user?.name || "User"}
-                      </div>
-                      <div className="text-xs text-zinc-500 truncate">
-                        {user?.email}
-                      </div>
-                    </div>
+              <div className="absolute right-0 mt-2 w-52 bg-[var(--briefing-bg)] dark:bg-zinc-900 rounded-[10px] border border-[var(--rule)] shadow-lg py-1 z-50">
+                <div className="px-4 py-3 border-b border-[var(--rule)]">
+                  <div className="text-[var(--ink-1)] dark:text-zinc-100 text-sm font-medium truncate">
+                    {user?.name || "User"}
                   </div>
+                  <div className="br-eyebrow mt-0.5 truncate">{user?.email}</div>
                 </div>
-
-                {/* Menu Items */}
                 <div className="py-1">
                   <Link
                     href="/wallet"
-                    className="w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center gap-2"
+                    className="w-full text-left px-4 py-2 text-sm text-[var(--ink-2)] dark:text-zinc-300 hover:text-[var(--ink-1)] dark:hover:text-zinc-100 hover:bg-[var(--rule-soft)] flex items-center gap-2 transition-colors"
                     onClick={() => setDropdownOpen(false)}
                   >
-                    <HugeiconsIcon
-                      icon={CreditCardIcon}
-                      className="text-lg flex-shrink-0"
-                    />
-                    <span className="truncate">Wallet</span>
+                    {t("nav.wallet")}
                   </Link>
-                  <div className="border-t border-zinc-200 dark:border-zinc-700 my-1"></div>
+                  <div className="border-t border-[var(--rule)] my-1" />
                   <button
-                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"
+                    className="w-full text-left px-4 py-2 text-sm text-[var(--led-failed)] hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 transition-colors"
                     onClick={handleLogout}
                   >
-                    <HugeiconsIcon
-                      icon={Logout01Icon}
-                      className="text-lg flex-shrink-0"
-                    />
-                    <span className="truncate">Logout</span>
+                    <HugeiconsIcon icon={Logout01Icon} className="text-base flex-shrink-0" />
+                    {t("nav.logout")}
                   </button>
                 </div>
               </div>
@@ -217,147 +183,76 @@ export default function PrivateHeader() {
           </div>
         </nav>
 
-        {/* Mobile Hamburger */}
+        {/* Mobile hamburger */}
         <button
-          className="md:hidden flex items-center"
+          className="md:hidden text-[var(--ink-2)] dark:text-zinc-300"
           onClick={() => setDrawerOpen(true)}
-          aria-label="Open menu"
+          aria-label={t("nav.openMenu")}
         >
-          <HugeiconsIcon
-            icon={Menu01Icon}
-            className="text-2xl text-zinc-700 dark:text-zinc-200"
-          />
+          <HugeiconsIcon icon={Menu01Icon} className="text-xl" />
         </button>
       </div>
-      {/* Mobile Drawer */}
+
+      {/* Mobile drawer */}
       {drawerOpen && (
         <div className="fixed inset-0 z-50">
-          {/* Overlay */}
-          <div
-            className="absolute inset-0 h-[100dvh] bg-black/60"
-            onClick={() => setDrawerOpen(false)}
-          />
-          {/* Drawer */}
-          <div className="absolute top-0 right-0 w-85 max-w-[90vw] h-[100dvh] rounded-l-lg bg-white dark:bg-zinc-950 shadow-lg flex flex-col p-6 gap-4 z-50 animate-slide-in-left">
-            <div className="flex flex-row gap-4 items-center justify-between mb-6">
-              <Link
-                href="/dashboard"
-                className="flex items-center gap-2 font-bold text-xl text-indigo-700 dark:text-indigo-300"
-                onClick={() => setDrawerOpen(false)}
-              >
-                <div className="flex items-center space-x-3">
-                  <img
-                    src="/summary_videos_logo.png"
-                    alt="SummaryVideos Logo"
-                    className="h-8 w-auto"
-                  />
-                  <div className="text-black text-2xl font-bold">
-                    SummaryVideos
-                  </div>
-                </div>
+          <div className="absolute inset-0 bg-black/60" onClick={() => setDrawerOpen(false)} />
+          <div className="absolute top-0 right-0 w-80 max-w-[90vw] h-[100dvh] bg-[var(--briefing-bg)] dark:bg-zinc-950 border-l border-[var(--rule)] flex flex-col p-6 gap-5 z-50 animate-slide-in-right">
+            <div className="flex items-center justify-between mb-2">
+              <Link href="/dashboard" className="flex items-center gap-2" onClick={() => setDrawerOpen(false)}>
+                <img src="/summary_videos_logo.png" alt="SummaryVideos" className="h-6 w-auto" />
+                <span style={{ fontFamily: "var(--font-display-br, Georgia, serif)" }} className="text-[var(--ink-1)] dark:text-zinc-100 text-base">
+                  SummaryVideos
+                </span>
               </Link>
-              <button
-                className=""
-                onClick={() => setDrawerOpen(false)}
-                aria-label="Close menu"
-              >
-                <HugeiconsIcon
-                  icon={Cancel01Icon}
-                  className="text-2xl text-zinc-700 dark:text-zinc-200 rotate-90"
-                />
+              <button onClick={() => setDrawerOpen(false)} aria-label={t("nav.closeMenu")} className="text-[var(--ink-2)] dark:text-zinc-400">
+                <HugeiconsIcon icon={Cancel01Icon} className="text-xl" />
               </button>
             </div>
 
-            <Link
-              href="/dashboard"
-              className={cn(
-                "font-medium transition-colors",
-                pathname === "/dashboard"
-                  ? "text-indigo-600 dark:text-indigo-400"
-                  : "text-zinc-700 dark:text-zinc-200 hover:text-indigo-600"
-              )}
-              onClick={() => setDrawerOpen(false)}
-            >
-              Dashboard
+            <Link href="/dashboard" className={navLinkClass("/dashboard")} onClick={() => setDrawerOpen(false)}>
+              {t("nav.dashboard")}
             </Link>
-            <Link
-              href="/wallet"
-              className={cn(
-                "flex items-center gap-1 font-medium transition-colors",
-                pathname === "/wallet"
-                  ? "text-indigo-600 dark:text-indigo-400"
-                  : "text-zinc-700 dark:text-zinc-200 hover:text-indigo-600"
-              )}
-              onClick={() => setDrawerOpen(false)}
-            >
-              <HugeiconsIcon icon={CreditCardIcon} className="text-lg mr-1" />
-              <span>{user?.credits || 0} Credits</span>
+            <Link href="/wallet" className={navLinkClass("/wallet")} onClick={() => setDrawerOpen(false)}>
+              {t("nav.wallet")} / {user?.credits ?? 0}
             </Link>
             <a
               href="https://github.com/joaorjoaquim/video-insight-web"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 text-zinc-700 dark:text-zinc-200 hover:text-indigo-600 font-medium transition-colors"
+              className="font-[var(--font-mono-br,monospace)] text-[11px] font-medium tracking-[0.12em] uppercase text-[var(--ink-2)] hover:text-[var(--ink-1)] dark:text-zinc-400 flex items-center gap-1"
             >
-              <HugeiconsIcon icon={Github01Icon} className="text-lg mr-1" />
-              GitHub
+              <HugeiconsIcon icon={Github01Icon} className="text-base" />
+              {t("nav.github")}
             </a>
-            <div className="flex items-center gap-2 mt-4">
-              <span className="text-xs text-zinc-500">Theme</span>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-                aria-label="Toggle theme"
-              >
-                {theme === "light" ? (
-                  <HugeiconsIcon icon={Moon01Icon} className="text-xl" />
-                ) : (
-                  <HugeiconsIcon icon={Sun01Icon} className="text-xl" />
-                )}
-              </Button>
-            </div>
 
-            {/* User Profile Section - Simplified */}
-            <div className="flex items-center gap-3 mt-6 border-t pt-4">
-              <img
-                src={getAvatarUrl()}
-                alt={user?.name || user?.email || "User"}
-                className="w-8 h-8 rounded-full border-2 border-indigo-400 flex-shrink-0"
-              />
+            <div className="flex items-center gap-3 mt-auto pt-4 border-t border-[var(--rule)]">
+              <img src={getAvatarUrl()} alt={user?.name || "User"} className="w-8 h-8 rounded-full border border-[var(--bars)]" />
               <div className="min-w-0 flex-1">
-                <div className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm truncate">
-                  {user?.name || "User"}
-                </div>
-                <div className="text-xs text-zinc-500 truncate">
-                  {user?.email}
-                </div>
+                <div className="text-[var(--ink-1)] dark:text-zinc-100 text-sm font-medium truncate">{user?.name || "User"}</div>
+                <div className="br-eyebrow truncate">{user?.email}</div>
               </div>
             </div>
-
-            {/* Simplified Menu Options */}
-            <div className="mt-4 space-y-2">
-              <Link
-                href="/wallet"
-                className="flex items-center gap-2 text-zinc-700 dark:text-zinc-200 hover:text-indigo-600 font-medium transition-colors"
-                onClick={() => setDrawerOpen(false)}
-              >
-                <HugeiconsIcon
-                  icon={CreditCardIcon}
-                  className="text-lg flex-shrink-0"
-                />
-                <span className="truncate">Wallet</span>
-              </Link>
-              <div className="border-t border-zinc-200 dark:border-zinc-700 my-2"></div>
+            <div className="flex gap-3 items-center">
               <button
-                className="flex items-center gap-2 text-red-600 hover:text-red-700 font-medium transition-colors w-full text-left"
+                onClick={() => setLocale(locale === "en" ? "pt-br" : "en")}
+                className="font-[var(--font-mono-br,monospace)] text-[11px] font-medium tracking-[0.12em] uppercase text-[var(--ink-2)] hover:text-[var(--play)] border border-[var(--rule)] rounded px-1.5 py-0.5 transition-colors"
+              >
+                {t("lang.toggle")}
+              </button>
+              <button
+                onClick={toggleTheme}
+                className="text-[var(--ink-2)] dark:text-zinc-400 hover:text-[var(--ink-1)] transition-colors"
+                aria-label={t("nav.toggleTheme")}
+              >
+                <HugeiconsIcon icon={theme === "light" ? Moon01Icon : Sun01Icon} className="text-lg" />
+              </button>
+              <button
+                className="flex items-center gap-2 text-[var(--led-failed)] text-sm font-medium"
                 onClick={handleLogout}
               >
-                <HugeiconsIcon
-                  icon={Logout01Icon}
-                  className="text-lg flex-shrink-0"
-                />
-                <span className="truncate">Logout</span>
+                <HugeiconsIcon icon={Logout01Icon} className="text-base" />
+                {t("nav.logout")}
               </button>
             </div>
           </div>
@@ -366,7 +261,3 @@ export default function PrivateHeader() {
     </header>
   );
 }
-
-// Tailwind animation (adicione ao seu globals.css se quiser animar o drawer)
-// .animate-slide-in-left { animation: slide-in-left 0.2s cubic-bezier(0.4,0,0.2,1) both; }
-// @keyframes slide-in-left { from { transform: translateX(-100%); } to { transform: translateX(0); } }

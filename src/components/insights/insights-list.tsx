@@ -1,62 +1,90 @@
 "use client";
 import React from "react";
-import { Badge } from "../ui/badge";
 
-import { InsightItem, InsightSection } from "../../types/submission";
+interface InsightItem {
+  text: string;
+  confidence?: number;
+  key?: boolean;
+  quote?: boolean;
+}
+
+interface InsightSection {
+  title: string;
+  icon?: any;
+  items: InsightItem[];
+}
 
 interface InsightsListProps {
   chips: Array<{ label: string; variant: "secondary" | "destructive" }>;
-  sections: Array<{
-    title: string;
-    icon: string;
-    items: Array<{
-      text: string;
-      confidence?: number;
-      key?: boolean;
-    }>;
-  }>;
+  sections: InsightSection[];
 }
 
 export default function InsightsList({ chips, sections }: InsightsListProps) {
   return (
     <>
-      <div className="flex flex-wrap gap-2 mb-6">
+      {/* Chips */}
+      <div className="flex flex-wrap gap-2 mb-8">
         {chips.map((chip, i) => (
-          <Badge key={i} variant={chip.variant}>
+          <span
+            key={i}
+            className="br-eyebrow border px-2.5 py-1.5 rounded-[4px]"
+            style={{
+              borderColor: chip.variant === "destructive" ? "var(--play)" : "var(--rule)",
+              color: chip.variant === "destructive" ? "var(--play)" : "var(--ink-2)",
+            }}
+          >
             {chip.label}
-          </Badge>
+          </span>
         ))}
       </div>
-      <div className="space-y-8">
+
+      {/* Sections */}
+      <div className="space-y-10 max-w-3xl">
         {sections.map((section, i) => (
-          <div key={i} className="border-l-2 border-purple-200 pl-4">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-2xl">{section.icon}</span>
-              <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">
+          <div key={i}>
+            {/* Section header with logo-bars */}
+            <div className="flex items-center gap-3 mb-5">
+              <span className="logo-bars"><i/><i/><i/></span>
+              <span className="br-eyebrow text-[var(--play-700)]">0{i + 1}</span>
+              <h3
+                style={{ fontFamily: "var(--font-display-br, Georgia, serif)", fontSize: "1.3rem", letterSpacing: "-0.01em" }}
+                className="text-[var(--ink-1)]"
+              >
                 {section.title}
               </h3>
             </div>
-            <div className="space-y-3 ml-6">
+
+            {/* Items */}
+            <div className="space-y-4 ml-9">
               {section.items.map((item, j) => (
-                <div key={j} className="flex items-start gap-2">
-                  <div className="flex gap-2 mt-0.5">
-                    {item.confidence && (
-                      <Badge
-                        variant="secondary"
-                        className="text-xs font-mono font-semibold"
+                <div key={j} className="grid grid-cols-[56px_1fr] gap-4 items-start">
+                  <div>
+                    {item.confidence !== undefined && (
+                      <span
+                        className="br-eyebrow tabular-nums"
+                        style={{ color: item.confidence >= 90 ? "var(--led-completed)" : "var(--ink-3)", fontFamily: "var(--font-mono-br, monospace)" }}
                       >
                         {item.confidence}%
-                      </Badge>
-                    )}
-                    {item.key && (
-                      <Badge variant="destructive" className="text-xs">
-                        Key
-                      </Badge>
+                      </span>
                     )}
                   </div>
-                  <span className="text-zinc-700 dark:text-zinc-200">
-                    {item.text}
-                  </span>
+                  <div>
+                    {item.key && (
+                      <span
+                        className="br-eyebrow mr-2"
+                        style={{ color: "var(--play)", borderBottom: "1px solid var(--play)", paddingBottom: 1 }}
+                      >
+                        Key
+                      </span>
+                    )}
+                    {item.quote ? (
+                      <div className="pull-quote mt-1">
+                        <div className="body">{item.text}</div>
+                      </div>
+                    ) : (
+                      <span className="text-[var(--ink-1)] text-sm leading-relaxed">{item.text}</span>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
