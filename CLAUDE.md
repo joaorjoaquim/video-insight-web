@@ -96,9 +96,9 @@ src/
 │   ├── utils.ts                        # cn() (clsx+twMerge), formatDuration(seconds→"M:SS")
 │   ├── api/
 │   │   ├── axios.ts                    # Axios instance with Bearer token interceptor + 401 redirect
-│   │   ├── authApi.ts                  # signup, login, getProfile, getOAuthUrl, getCredits
+│   │   ├── authApi.ts                  # signup, login, getProfile, getOAuthUrl, getCredits, redeemPromoCode, claimGithubCredits, getReferralInfo
 │   │   ├── videoInsightApi.ts          # submitVideo, getVideos, getVideo, getVideoStatus
-│   │   └── hooks.ts                    # TanStack Query hooks: useVideos, useVideo, useVideoStatus, useSubmitVideo, useCredits
+│   │   └── hooks.ts                    # TanStack Query hooks: useVideos, useVideo, useVideoStatus, useSubmitVideo, useCredits, useRedeemPromoCode, useClaimGithubCredits, useReferralInfo
 │   ├── i18n/
 │   │   ├── index.tsx                   # I18nProvider, useT(), useI18n() hooks; localStorage + browser locale detection
 │   │   └── locales/
@@ -155,6 +155,7 @@ store
 | `["video", id]` | `useVideo` | Single video details (60s stale) |
 | `["video-status", id]` | `useVideoStatus` | Poll status every 10s while pending/transcribing/downloaded |
 | `["credits"]` | `useCredits` | Credits + transaction list (30s stale) |
+| `["referral"]` | `useReferralInfo` | Referral code, URL, count, credits earned (5 min stale, no retry) |
 
 ---
 
@@ -164,11 +165,14 @@ All requests go to `NEXT_PUBLIC_API_BASE_URL`. Auth token added as `Authorizatio
 
 | Method | Path | Description |
 |---|---|---|
-| POST | `/auth/signup` | Create account |
+| POST | `/auth/signup` | Create account; accepts optional `referralCode` in body |
 | POST | `/auth/login` | Login → returns `{ user, token }` |
 | GET | `/user/profile` | Current user data |
-| GET | `/auth/oauth/:provider` | OAuth redirect (google, discord) |
+| GET | `/user/referral` | Referral code + URL + stats |
+| GET | `/auth/oauth/:provider` | OAuth redirect (`google` \| `discord` \| `github`) |
 | GET | `/credits` | Credits balance + paginated transactions |
+| POST | `/credits/redeem` | Redeem a promo code → `{ credits, coinsAdded, message }` |
+| POST | `/credits/claim/github` | Claim star/fork credits → `{ credits, coinsAdded, message }` |
 | POST | `/video` | Submit video URL |
 | GET | `/video` | List all user videos |
 | GET | `/video/:id` | Get video detail (summary, transcript, insights, mindMap) |
@@ -239,9 +243,21 @@ All requests go to `NEXT_PUBLIC_API_BASE_URL`. Auth token added as `Authorizatio
 **File:** `src/lib/utils/export-utils.ts`  
 **Issue:** PDF output does not use the brand colors or logo, content structure is incorrect (missing sections, wrong layout). Needs full audit against actual data shape (summary, transcript, insights, mind map).
 
-### 12. Currency display in wallet "Add Balance" dialog
+### 12. No GitHub OAuth button in AuthDialog
+**File:** `src/components/AuthDialog.tsx`  
+**Issue:** The API supports GitHub OAuth (`GET /auth/oauth/github`) but the auth dialog only shows Google and Discord buttons. `getOAuthUrl()` in `authApi.ts` is typed for `"google" | "discord"` only. Users can still link GitHub manually via the wallet claim form.
+
+### 13. Wallet GitHub claim targets only web repo
+**File:** `src/app/(private)/wallet/page.tsx`, `src/lib/api/authApi.ts`  
+**Issue:** The UI only links to `video-insight-web` and sends no `repo` field to the API (API defaults to `"web"`). Users cannot claim credits for starring/forking `video-insight-api` from the frontend.
+
+### 14. No success/error distinction on GitHub claim
 **File:** `src/app/(private)/wallet/page.tsx`  
-**Issue:** Credit package prices are hardcoded in USD. No currency localization or formatting applied.
+**Issue:** `handleClaimGithub` shows a single generic error string on failure. No distinction between "not found" (404), "already claimed" (409), and "rate limited" (429). No success state shown after claim — the credits update silently via query invalidation.
+
+### 15. "Buy Credits" dialog has no payment integration
+**File:** `src/app/(private)/wallet/page.tsx`  
+**Issue:** The package selection UI is complete but the "Buy Now" button just closes the dialog. No Stripe or other payment processor is wired.
 
 ---
 
