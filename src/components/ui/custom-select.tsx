@@ -72,7 +72,7 @@ export function CustomSelect({ options, value, onChange, className }: CustomSele
                   type="button"
                   onClick={() => { onChange(opt.value); close(); }}
                   className={cn(
-                    "w-full text-left px-3 py-2.5 text-[11px] font-medium tracking-[0.1em] transition-colors",
+                    "w-full text-left px-3 py-1.5 text-[11px] font-medium tracking-[0.1em] transition-colors",
                     isSelected
                       ? "bg-[var(--bars)] text-white"
                       : "text-[var(--ink-2)] hover:bg-[var(--rule-soft)] hover:text-[var(--ink-1)]"

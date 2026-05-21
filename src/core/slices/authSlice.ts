@@ -62,6 +62,13 @@ export const fetchProfile = createAsyncThunk(
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch profile');
     }
+  },
+  {
+    condition: (_, { getState }) => {
+      const { auth } = getState() as { auth: AuthState };
+      // skip if a login/signup is already in progress
+      return !auth.isLoading;
+    },
   }
 );
 
@@ -125,9 +132,8 @@ const authSlice = createSlice({
         state.error = action.payload as string;
       })
       // Fetch Profile
-      .addCase(fetchProfile.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
+      .addCase(fetchProfile.pending, (_state) => {
+        // background profile refresh — no loading state to avoid flicker
       })
       .addCase(fetchProfile.fulfilled, (state, action) => {
         state.isLoading = false;

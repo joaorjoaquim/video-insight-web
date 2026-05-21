@@ -5,21 +5,23 @@ import { useAppSelector, useAppDispatch } from "../../../core/hooks";
 import { fetchProfile } from "../../../core/slices/authSlice";
 import { useCredits, useRedeemPromoCode, useClaimGithubCredits, useReferralInfo } from "../../../lib/api/hooks";
 import { getGithubLinkUrl } from "../../../lib/api/authApi";
-import { useT } from "../../../lib/i18n";
+import { useT, useI18n } from "../../../lib/i18n";
 import { Reveal } from "../../../components/ui/reveal";
 import { CustomSelect } from "../../../components/ui/custom-select";
 
-function getNextSundayLabel(): string {
+function getNextSundayLabel(locale: string): string {
   const now = new Date();
   const day = now.getDay(); // 0 = Sunday
   const daysUntilSunday = day === 0 ? 7 : 7 - day;
   const next = new Date(now);
   next.setDate(now.getDate() + daysUntilSunday);
-  return next.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
+  const localeStr = locale === "pt-br" ? "pt-BR" : "en-US";
+  return next.toLocaleDateString(localeStr, { weekday: "long", month: "short", day: "numeric" });
 }
 
 export default function WalletPage() {
   const t = useT();
+  const { locale } = useI18n();
   const dispatch = useAppDispatch();
   const [filterType, setFilterType] = useState("all");
   const [filterPeriod, setFilterPeriod] = useState("30days");
@@ -31,19 +33,76 @@ export default function WalletPage() {
   const [promoResult, setPromoResult] = useState<{ ok: boolean; msg: string } | null>(null);
   const [githubError, setGithubError] = useState<string | null>(null);
   const [referralCopied, setReferralCopied] = useState(false);
+  const [githubLinking, setGithubLinking] = useState(false);
+  const [githubSuccess, setGithubSuccess] = useState(false);
 
   const { user } = useAppSelector((state: any) => state.auth);
-  const { data: creditsData, isLoading, error } = useCredits(page, ITEMS_PER_PAGE);
+  const effectiveLimit = filterPeriod !== "all" ? 200 : ITEMS_PER_PAGE;
+  const effectivePage = filterPeriod !== "all" ? 1 : page;
+  const { data: creditsData, isLoading, error } = useCredits(effectivePage, effectiveLimit);
   const redeemMutation = useRedeemPromoCode();
   const claimGithubMutation = useClaimGithubCredits();
   const { data: referralData, isLoading: referralLoading } = useReferralInfo();
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('github_linked') === '1') {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const linked = params.get("github_linked");
+    const error = params.get("error");
+    if (!linked && !error) return;
+
+    window.history.replaceState({}, "", "/wallet");
+
+    // If we're in a popup opened by the main window, communicate back and close
+    if (window.opener && !window.opener.closed) {
+      window.opener.postMessage(
+        { type: "github_linked", success: linked === "1", error: error || null },
+        window.location.origin
+      );
+      window.close();
+      return;
+    }
+
+    // Direct navigation (popup was blocked, user came here normally)
+    if (linked === "1") {
       dispatch(fetchProfile());
-      window.history.replaceState({}, '', '/wallet');
+      setGithubSuccess(true);
+      setTimeout(() => setGithubSuccess(false), 5000);
+    }
+    if (error) {
+      setGithubError(
+        error === "github_already_linked" ? t("wallet.earn.github.error.alreadyLinked")
+        : error === "github_already_owned" ? t("wallet.earn.github.error.alreadyOwned")
+        : t("wallet.earn.github.error.generic")
+      );
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const handler = (e: MessageEvent) => {
+      if (e.origin !== window.location.origin) return;
+      if (e.data?.type === "github_linked") {
+        setGithubLinking(false);
+        if (e.data.success) {
+          dispatch(fetchProfile());
+          setGithubSuccess(true);
+          setTimeout(() => setGithubSuccess(false), 5000);
+        } else {
+          setGithubError(e.data.error === "github_already_linked"
+            ? t("wallet.earn.github.error.alreadyLinked")
+            : e.data.error === "github_already_owned"
+            ? t("wallet.earn.github.error.alreadyOwned")
+            : t("wallet.earn.github.error.generic"));
+        }
+      }
+    };
+    window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  }, [dispatch, t]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [filterPeriod, filterType]);
 
   const credits = creditsData?.credits ?? user?.credits ?? 0;
   const transactions = creditsData?.transactions || [];
@@ -106,11 +165,16 @@ export default function WalletPage() {
   };
 
   const handleConnectGithub = async () => {
+    setGithubLinking(true);
     try {
       const url = await getGithubLinkUrl();
-      window.location.href = url;
+      const popup = window.open(url, "github-oauth", "width=600,height=700,scrollbars=yes,resizable=yes");
+      if (!popup) {
+        // popup blocked — fall back to redirect
+        window.location.href = url;
+      }
     } catch {
-      // silent fail — user stays on page
+      setGithubLinking(false);
     }
   };
 
@@ -239,9 +303,10 @@ export default function WalletPage() {
                 <table className="w-full text-sm border-collapse min-w-[480px]">
                   <thead>
                     <tr className="border-b border-[var(--rule)]">
-                      {[t("wallet.ledger.col.type"), t("wallet.ledger.col.description"), t("wallet.ledger.col.amount"), t("wallet.ledger.col.status")].map((h, i) => (
-                        <th key={i} className={`br-eyebrow py-2 text-left font-normal ${i >= 2 ? "text-right" : ""}`}>{h}</th>
-                      ))}
+                      <th className="br-eyebrow py-2 pr-4 text-left font-normal w-24">{t("wallet.ledger.col.type")}</th>
+                      <th className="br-eyebrow py-2 text-left font-normal">{t("wallet.ledger.col.description")}</th>
+                      <th className="br-eyebrow py-2 pl-4 text-right font-normal w-28">{t("wallet.ledger.col.amount")}</th>
+                      <th className="br-eyebrow py-2 pl-4 text-right font-normal w-28">{t("wallet.ledger.col.status")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -254,10 +319,10 @@ export default function WalletPage() {
                           <div className="text-[var(--ink-1)] text-sm">{tx.description || (tx.type === "spend" ? "Video submission" : tx.type === "purchase" ? "Credit purchase" : "Credit refund")}</div>
                           <div className="br-eyebrow mt-0.5">{formatDate(tx.createdAt)}</div>
                         </td>
-                        <td className={`py-3 pr-4 text-right font-medium tabular-nums ${typeColor(tx.amount)}`} style={{ fontFamily: "var(--font-mono-br, monospace)", fontSize: 13 }}>
+                        <td className={`py-3 pl-4 text-right font-medium tabular-nums ${typeColor(tx.amount)}`} style={{ fontFamily: "var(--font-mono-br, monospace)", fontSize: 13 }}>
                           {tx.amount >= 0 ? "+" : "–"}{Math.abs(tx.amount)} cr
                         </td>
-                        <td className="py-3 text-right">
+                        <td className="py-3 pl-4 text-right">
                           <span className="led completed">completed</span>
                         </td>
                       </tr>
@@ -267,7 +332,7 @@ export default function WalletPage() {
                 </div>
               )}
 
-              {creditsData?.pagination && (
+              {creditsData?.pagination && filterPeriod === "all" && (
                 <div className="flex flex-wrap items-center justify-between gap-2 mt-4">
                   <div className="br-eyebrow">
                     {t("wallet.ledger.showing")} {Math.min(page * ITEMS_PER_PAGE, creditsData.pagination.total)} {t("wallet.ledger.of")} {creditsData.pagination.total} {t("wallet.ledger.transactions")}
@@ -329,7 +394,7 @@ export default function WalletPage() {
                     <div className="br-eyebrow mt-1">{t("wallet.earn.weekly.amount")}</div>
                   </div>
                   <div className="pt-3 border-t border-[var(--rule)]">
-                    <div className="br-eyebrow">{t("wallet.earn.weekly.next")}: {getNextSundayLabel()}</div>
+                    <div className="br-eyebrow">{t("wallet.earn.weekly.next")}: {getNextSundayLabel(locale)}</div>
                   </div>
                 </div>
 
@@ -372,15 +437,24 @@ export default function WalletPage() {
                   {!user?.githubUsername ? (
                     <>
                       <p className="text-[var(--ink-3)] text-xs">{t("wallet.earn.github.notLinked")}</p>
+                      {githubError && <p className="text-xs text-[var(--led-failed)]">{githubError}</p>}
+                      {githubSuccess && (
+                        <p className="text-xs text-[var(--led-completed)]">{t("wallet.earn.github.connected")}</p>
+                      )}
                       <button
                         type="button"
                         onClick={handleConnectGithub}
-                        className="mt-auto flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold bg-[var(--ink-1)] hover:opacity-80 text-[var(--briefing-bg)] rounded-[6px] transition-opacity"
+                        disabled={githubLinking}
+                        className="mt-auto flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold bg-[var(--ink-1)] hover:opacity-80 disabled:opacity-50 text-[var(--briefing-bg)] rounded-[6px] transition-opacity"
                       >
-                        <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden>
-                          <path fill="currentColor" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/>
-                        </svg>
-                        {t("wallet.earn.github.connect")}
+                        {githubLinking ? (
+                          <span className="bars-loader scale-75 origin-center" style={{ filter: "brightness(10)" }}><i/><i/><i/><i/></span>
+                        ) : (
+                          <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden>
+                            <path fill="currentColor" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/>
+                          </svg>
+                        )}
+                        {githubLinking ? t("wallet.earn.github.connecting") : t("wallet.earn.github.connect")}
                       </button>
                     </>
                   ) : (

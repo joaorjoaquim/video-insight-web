@@ -41,3 +41,149 @@ npm warn config production Use `--omit=dev` instead.
  GET /dashboard 200 in 889ms
  GET / 200 in 652ms
  GET /dashboard 200 in 72ms
+ ✓ Compiled in 90ms
+ ✓ Compiled in 108ms
+ ✓ Compiled in 98ms
+ ⚠ Fast Refresh had to perform a full reload when ./src/lib/i18n/locales/en.ts changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\john\Documents\Projetos\video-insight\video-insight-web\.next\server\app\(private)\dashboard\page\app-build-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\john\\Documents\\Projetos\\video-insight\\video-insight-web\\.next\\server\\app\\(private)\\dashboard\\page\\app-build-manifest.json'
+}
+ ✓ Compiled in 75ms
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 1420ms
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\john\Documents\Projetos\video-insight\video-insight-web\.next\static\development\_buildManifest.js.tmp.nu7jbx0z76'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\john\\Documents\\Projetos\\video-insight\\video-insight-web\\.next\\static\\development\\_buildManifest.js.tmp.nu7jbx0z76'
+}
+[Error: ENOENT: no such file or directory, open 'C:\Users\john\Documents\Projetos\video-insight\video-insight-web\.next\server\app\(private)\dashboard\page\app-build-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\john\\Documents\\Projetos\\video-insight\\video-insight-web\\.next\\server\\app\\(private)\\dashboard\\page\\app-build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\john\Documents\Projetos\video-insight\video-insight-web\.next\static\development\_buildManifest.js.tmp.u2sln125slo'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\john\\Documents\\Projetos\\video-insight\\video-insight-web\\.next\\static\\development\\_buildManifest.js.tmp.u2sln125slo'
+}
+[Error: ENOENT: no such file or directory, open 'C:\Users\john\Documents\Projetos\video-insight\video-insight-web\.next\static\development\_buildManifest.js.tmp.p1y6cvd74g'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\john\\Documents\\Projetos\\video-insight\\video-insight-web\\.next\\static\\development\\_buildManifest.js.tmp.p1y6cvd74g'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\john\Documents\Projetos\video-insight\video-insight-web\.next\server\app\favicon.ico\[__metadata_id__]\route\app-paths-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\john\\Documents\\Projetos\\video-insight\\video-insight-web\\.next\\server\\app\\favicon.ico\\[__metadata_id__]\\route\\app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\john\Documents\Projetos\video-insight\video-insight-web\.next\server\app\(private)\wallet\page\build-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\john\\Documents\\Projetos\\video-insight\\video-insight-web\\.next\\server\\app\\(private)\\wallet\\page\\build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\john\Documents\Projetos\video-insight\video-insight-web\.next\static\development\_buildManifest.js.tmp.uv4jkuj462'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\john\\Documents\\Projetos\\video-insight\\video-insight-web\\.next\\static\\development\\_buildManifest.js.tmp.uv4jkuj462'
+}
+[Error: ENOENT: no such file or directory, open 'C:\Users\john\Documents\Projetos\video-insight\video-insight-web\.next\server\app\(private)\wallet\page\build-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\john\\Documents\\Projetos\\video-insight\\video-insight-web\\.next\\server\\app\\(private)\\wallet\\page\\build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\john\Documents\Projetos\video-insight\video-insight-web\.next\static\development\_buildManifest.js.tmp.fstsn7u7wb'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\john\\Documents\\Projetos\\video-insight\\video-insight-web\\.next\\static\\development\\_buildManifest.js.tmp.fstsn7u7wb'
+}
+[Error: ENOENT: no such file or directory, open 'C:\Users\john\Documents\Projetos\video-insight\video-insight-web\.next\static\development\_buildManifest.js.tmp.3df60i1qcgj'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\john\\Documents\\Projetos\\video-insight\\video-insight-web\\.next\\static\\development\\_buildManifest.js.tmp.3df60i1qcgj'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\john\Documents\Projetos\video-insight\video-insight-web\.next\server\app\favicon.ico\[__metadata_id__]\route\app-paths-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\john\\Documents\\Projetos\\video-insight\\video-insight-web\\.next\\server\\app\\favicon.ico\\[__metadata_id__]\\route\\app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\john\Documents\Projetos\video-insight\video-insight-web\.next\server\app\(private)\wallet\page\build-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\john\\Documents\\Projetos\\video-insight\\video-insight-web\\.next\\server\\app\\(private)\\wallet\\page\\build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\john\Documents\Projetos\video-insight\video-insight-web\.next\static\development\_buildManifest.js.tmp.r7psrj5pyt'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\john\\Documents\\Projetos\\video-insight\\video-insight-web\\.next\\static\\development\\_buildManifest.js.tmp.r7psrj5pyt'
+}
+[Error: ENOENT: no such file or directory, open 'C:\Users\john\Documents\Projetos\video-insight\video-insight-web\.next\server\app\(private)\wallet\page\build-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\john\\Documents\\Projetos\\video-insight\\video-insight-web\\.next\\server\\app\\(private)\\wallet\\page\\build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\john\Documents\Projetos\video-insight\video-insight-web\.next\static\development\_buildManifest.js.tmp.h5eozogw56'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\john\\Documents\\Projetos\\video-insight\\video-insight-web\\.next\\static\\development\\_buildManifest.js.tmp.h5eozogw56'
+}
+[Error: ENOENT: no such file or directory, open 'C:\Users\john\Documents\Projetos\video-insight\video-insight-web\.next\static\development\_buildManifest.js.tmp.lvyy5a820gp'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\john\\Documents\\Projetos\\video-insight\\video-insight-web\\.next\\static\\development\\_buildManifest.js.tmp.lvyy5a820gp'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\john\Documents\Projetos\video-insight\video-insight-web\.next\server\app\favicon.ico\[__metadata_id__]\route\app-paths-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\john\\Documents\\Projetos\\video-insight\\video-insight-web\\.next\\server\\app\\favicon.ico\\[__metadata_id__]\\route\\app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\john\Documents\Projetos\video-insight\video-insight-web\.next\server\app\page\app-build-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\john\\Documents\\Projetos\\video-insight\\video-insight-web\\.next\\server\\app\\page\\app-build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\john\Documents\Projetos\video-insight\video-insight-web\.next\static\development\_buildManifest.js.tmp.kjq6rx7sikr'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\john\\Documents\\Projetos\\video-insight\\video-insight-web\\.next\\static\\development\\_buildManifest.js.tmp.kjq6rx7sikr'
+}
+[Error: ENOENT: no such file or directory, open 'C:\Users\john\Documents\Projetos\video-insight\video-insight-web\.next\server\app\page\app-build-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\john\\Documents\\Projetos\\video-insight\\video-insight-web\\.next\\server\\app\\page\\app-build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\john\Documents\Projetos\video-insight\video-insight-web\.next\static\development\_buildManifest.js.tmp.w82icu27cpe'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\john\\Documents\\Projetos\\video-insight\\video-insight-web\\.next\\static\\development\\_buildManifest.js.tmp.w82icu27cpe'
+}
+[Error: ENOENT: no such file or directory, open 'C:\Users\john\Documents\Projetos\video-insight\video-insight-web\.next\static\development\_buildManifest.js.tmp.iuetfd9wib'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\john\\Documents\\Projetos\\video-insight\\video-insight-web\\.next\\static\\development\\_buildManifest.js.tmp.iuetfd9wib'
+}
+[?25h

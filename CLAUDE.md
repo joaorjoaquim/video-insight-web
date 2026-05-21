@@ -292,6 +292,51 @@ All requests go to `NEXT_PUBLIC_API_BASE_URL`. Auth token added as `Authorizatio
 **Issue:** Button label is a hardcoded English string, not using the i18n `t()` hook.  
 **Fix:** Replaced "Process Video" with `t("dashboard.submit.button")` and "Cancel" with `t("dashboard.submit.cancel")`. Added `useT()` hook import and initialization. Added `dashboard.submit.cancel` key to both en.ts and pt-br.ts locale files.
 
+### 21. ✅ Fixed: GitHub link navigated away from wallet page, no loading state, no popup
+**File:** `src/app/(private)/wallet/page.tsx`  
+**Issue:** Clicking "Connect GitHub Account" called `window.location.href = url`, navigating the user away. No loading indicator while the OAuth URL was being fetched. After returning, no visual confirmation that the link succeeded. `target="_blank"` is not viable — GitHub OAuth requires a same-context redirect.  
+**Fix:** Changed to `window.open(url, "github-oauth", "width=600,height=700,...")` to open a popup. After OAuth completes, the callback page detects `window.opener` and sends a `postMessage({ type: "github_linked", success: true|false })` then closes. Main wallet page listens for the message, dispatches `fetchProfile()`, and shows a 5-second success indicator. If popup is blocked, falls back to `window.location.href`. Added `githubLinking` state that disables the button and shows the bars-loader spinner while the popup is open.
+
+### 22. ✅ Fixed: Weekly restore date used browser locale instead of app locale
+**File:** `src/app/(private)/wallet/page.tsx`  
+**Issue:** `getNextSundayLabel()` called `toLocaleDateString()` without a locale argument, so the day/month names followed the OS/browser locale regardless of the user's selected in-app language.  
+**Fix:** Added `locale` param from `useI18n()`. Helper now maps app locale `"pt-br"` → `"pt-BR"` and `"en"` → `"en-US"` before passing to `toLocaleDateString()`.
+
+### 23. ✅ Fixed: Transaction table VALOR column misaligned
+**File:** `src/app/(private)/wallet/page.tsx`  
+**Issue:** Amount and status table cells had inconsistent left padding vs. their headers, causing visual misalignment.  
+**Fix:** Added explicit `w-24`/`w-28` to header `<th>` columns, matched `pl-4` padding on amount/status `<td>` cells, and wrapped the table in `<div className="overflow-x-auto -mx-1 px-1">` with `min-w-[480px]` on `<table>` to prevent column collapse on small screens.
+
+### 24. ✅ Fixed: Pagination Next button enabled but clicking shows empty list
+**File:** `src/app/(private)/wallet/page.tsx`  
+**Issue:** The server returns paginated results but the wallet page also applied a client-side 30-day date filter. On page 2+, transactions were older than 30 days and all filtered out, yielding an empty list even though `hasNextPage` was true.  
+**Fix:** When any period filter is active (`filterPeriod !== "all"`), use `limit=200, page=1` (effectively "load all, filter client-side"). Pagination controls are hidden when a period filter is active. Page state resets to 1 on filter change via `useEffect`.
+
+### 25. ✅ Fixed: CustomSelect dropdown options had excessive Y-axis padding
+**File:** `src/components/ui/custom-select.tsx`  
+**Issue:** Option buttons used `py-2.5`, making the dropdown feel overly tall and visually off.  
+**Fix:** Changed to `py-1.5` for tighter, more standard option spacing.
+
+### 26. ✅ Fixed: Smooth scroll not working
+**File:** `src/app/globals.css`  
+**Issue:** Anchor links and scroll-to-top triggered instant jumps instead of smooth scrolling.  
+**Fix:** Added `html { scroll-behavior: smooth; }` before the `:root` CSS variables block.
+
+### 27. ✅ Fixed: Profile API called repeatedly, causing loading flicker
+**File:** `src/core/slices/authSlice.ts`  
+**Issue:** `fetchProfile.pending` set `state.isLoading = true` on every background refresh, causing unnecessary re-renders and UI flicker. Multiple in-flight dispatches could also race.  
+**Fix:** Removed `state.isLoading = true` from `fetchProfile.pending` case (only initial auth sets it). Added `condition` option to `fetchProfile` thunk to skip dispatch if `auth.isLoading` is already true, preventing concurrent fetches.
+
+### 28. ✅ Fixed: Earn Credits cards shrink text at mid-width (4-column grid too dense)
+**File:** `src/app/(private)/wallet/page.tsx`  
+**Issue:** The 4-column earn credits grid at `lg` breakpoints squeezed card text (GitHub button labels, descriptions) and made the layout hard to read.  
+**Fix:** Changed from `grid-cols-1 md:grid-cols-2 lg:grid-cols-4` to `grid-cols-1 sm:grid-cols-2` (permanent 2×2 layout on ≥640px). Cards now have enough width to display text without wrapping.
+
+### 29. ✅ Fixed: Dashboard submit form not responsive (horizontal row only)
+**File:** `src/app/(private)/dashboard/page.tsx`  
+**Issue:** URL input + submit button always rendered as a flex row, causing the button to shrink below usable tap size on mobile.  
+**Fix:** Changed submit row to `flex-col sm:flex-row` with `w-full sm:w-auto` on the button so it stacks vertically on xs and returns to row layout on ≥640px.
+
 ---
 
 ## Data Flow: Video Submission
