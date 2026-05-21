@@ -118,10 +118,11 @@ export const useVideoStatusUpdate = () => {
 };
 
 // Hook for fetching credits and transactions
-export const useCredits = () => {
+export const useCredits = (page = 1, limit = 20) => {
+  const offset = (page - 1) * limit;
   return useQuery({
-    queryKey: ["credits"],
-    queryFn: () => getCredits(),
+    queryKey: ["credits", page],
+    queryFn: () => getCredits(limit, offset),
     staleTime: 30 * 1000,
     refetchOnWindowFocus: true,
   });
@@ -146,10 +147,11 @@ export const useRedeemPromoCode = () => {
 export const useClaimGithubCredits = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ githubUsername, action }: { githubUsername: string; action: "star" | "fork" }) =>
-      claimGithubCredits(githubUsername, action),
+    mutationFn: ({ action, repo }: { action: "star" | "fork"; repo: "web" | "api" }) =>
+      claimGithubCredits(action, repo),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["credits"] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
   });
 };

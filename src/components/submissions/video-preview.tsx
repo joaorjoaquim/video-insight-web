@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { VideoMetadata } from "../../lib/utils/video-metadata";
+import { useT } from "../../lib/i18n";
 
 const PLATFORM_ICONS: Record<string, React.ReactNode> = {
   youtube: (
@@ -35,6 +36,7 @@ export default function VideoPreview({
   isProcessing = false,
   error,
 }: VideoPreviewProps) {
+  const t = useT();
   return (
     <div
       className="border border-[var(--rule)] rounded-[8px] p-4 bg-[var(--briefing-bg)] dark:bg-zinc-900"
@@ -93,7 +95,7 @@ export default function VideoPreview({
                 <circle cx="7" cy="7" r="6.25" stroke="currentColor" strokeWidth="1.25"/>
                 <path d="M5.5 4.5l4 2.5-4 2.5V4.5z" fill="currentColor"/>
               </svg>
-              Process Video
+              {t("dashboard.submit.button")}
             </>
           )}
         </button>
@@ -102,7 +104,7 @@ export default function VideoPreview({
           onClick={onRemove}
           className="px-4 py-2.5 text-sm text-[var(--ink-2)] border border-[var(--rule)] hover:border-[var(--ink-2)] hover:text-[var(--ink-1)] rounded-[6px] transition-colors"
         >
-          Cancel
+          {t("dashboard.submit.cancel")}
         </button>
       </div>
     </div>

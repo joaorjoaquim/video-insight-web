@@ -196,68 +196,101 @@ All requests go to `NEXT_PUBLIC_API_BASE_URL`. Auth token added as `Authorizatio
 
 ## Known Bugs
 
-### 1. Duplicate video submission on URL processing
+### 1. ✅ Fixed: Duplicate video submission on URL processing
 **File:** `src/app/(private)/dashboard/page.tsx`  
 **Issue:** When a user submits a video URL, the API call fires twice, creating two separate video entries in the database.  
-**Likely cause:** `useSubmitVideo` mutation triggered more than once — possible double-render or missing guard in the submit handler.
+**Likely cause:** `useSubmitVideo` mutation triggered more than once — possible double-render or missing guard in the submit handler.  
+**Fix:** Added `submitVideoMutation.isPending` guard to `handleProcessVideo` function to prevent re-firing mutations during in-flight requests.
 
-### 2. Emoji rendering corruption in Insights section
+### 2. ✅ Fixed (API-side): Emoji rendering corruption in Insights section
 **File:** `src/components/insights/insights-list.tsx`  
 **Issue:** `section.icon` from the API is a UTF-8 emoji string (e.g. `💡`) but renders as mojibake (`ðŸ'¡`).  
-**Likely cause:** API response encoding mismatch or wrong content-type header.
+**Fix:** API now adds `Content-Type: application/json; charset=utf-8` via an `onSend` hook in `server.ts`. Client-side no changes needed.
 
-### 3. Wallet pagination is fake
+### 3. ✅ Fixed: Wallet pagination is fake
 **File:** `src/app/(private)/wallet/page.tsx`  
 **Issue:** Pagination UI is rendered but non-functional. Always shows first N transactions.  
-**Fix:** Implement actual page state + pass `offset` to the `/credits` API call.
+**Fix:** Added `page` state, `ITEMS_PER_PAGE = 20`, updated `useCredits(page, ITEMS_PER_PAGE)` hook signature to pass `limit`/`offset` to the API, and replaced the static "Showing X of Y" line with real Prev/Next pagination buttons.
 
 ### 4. Summary metric "Duration: N/A"
 **File:** `src/app/(private)/submissions/[id]/page.tsx`  
 **Issue:** The API sends `"N/A"` for duration in the metrics array even though `videoData.duration` is a valid number. The header shows correctly via `formatDuration()`. Client should override the API value with `videoData.duration` when available.
 
-### 5. No route-level auth guard
-**File:** `src/app/(private)/layout.tsx`  
-**Issue:** Private layout is a passthrough. Unauthenticated users hit API 401s and get redirected by the Axios interceptor — not cleanly by the router. No `middleware.ts` exists.
+### 5. ✅ Fixed: No route-level auth guard
+**File:** `src/middleware.ts`  
+**Fix:** `src/middleware.ts` added with `PROTECTED_ROUTES` array covering `/dashboard`, `/wallet`, `/submissions`. Checks `auth_token` cookie (with Authorization header fallback), redirects to `/` if absent. Includes security headers and legacy URL redirects.
 
-### 6. `setAuthDialogState` dead code
-**File:** `src/core/slices/authSlice.ts` line 83-85  
-**Issue:** Empty reducer superseded by `dialogSlice`. Safe to delete.
+### 6. ✅ Fixed: `setAuthDialogState` dead code
+**File:** `src/core/slices/authSlice.ts`  
+**Issue:** Empty reducer superseded by `dialogSlice`. Safe to delete.  
+**Fix:** Code was already removed from authSlice.ts (only `logout`, `clearError`, and `setOAuthSession` remain). No references found in codebase.
 
-### 7. `exampleSlice.ts` unused
+### 7. ✅ Fixed: `exampleSlice.ts` unused
 **File:** `src/core/slices/exampleSlice.ts`  
-**Issue:** Not wired into the Redux store. Dead code.
+**Issue:** Not wired into the Redux store. Dead code.  
+**Fix:** File never existed in the codebase. store.ts only imports authReducer and dialogReducer. No references to exampleSlice found.
 
 ### 8. AuthDialog custom modal instead of Radix Dialog
 **File:** `src/components/AuthDialog.tsx`  
 **Issue:** Implements its own fixed overlay modal rather than using `src/components/ui/dialog.tsx`. Missing Radix focus trap and ARIA attributes.
 
-### 9. No feedback on copy / PDF download buttons
+### 9. No feedback on copy / PDF download buttons *(may be fixed — verify)*
 **File:** `src/components/ui/action-buttons.tsx`  
-**Issue:** After clicking "Copy" or "Download PDF", no visual confirmation is shown. Users can't tell if the action succeeded.
+**Issue:** After clicking "Copy" or "Download PDF", no visual confirmation is shown. Users can't tell if the action succeeded.  
+**Note:** Scan found `copied` state + "Copied!" / "Saving…" feedback present at lines 34–40. Verify the UI actually renders it before closing.
 
-### 10. View toggle hover: black background + dark text
+### 10. ✅ Fixed: View toggle hover: black background + dark text
 **File:** `src/components/ui/view-toggle.tsx`  
-**Issue:** The hover state on the inactive view toggle option renders with a black background and dark-colored text, resulting in very low contrast and unreadable text.
+**Issue:** The hover state on the inactive view toggle option renders with a black background and dark-colored text, resulting in very low contrast and unreadable text.  
+**Fix:** Changed inactive button hover background from `hover:bg-[var(--rule-soft)]` to `hover:bg-[var(--play)]/10` for better contrast.
 
 ### 11. PDF export is broken / malformatted
 **File:** `src/lib/utils/export-utils.ts`  
 **Issue:** PDF output does not use the brand colors or logo, content structure is incorrect (missing sections, wrong layout). Needs full audit against actual data shape (summary, transcript, insights, mind map).
 
-### 12. No GitHub OAuth button in AuthDialog
+### 12. ✅ Fixed: No GitHub OAuth button in AuthDialog
 **File:** `src/components/AuthDialog.tsx`  
-**Issue:** The API supports GitHub OAuth (`GET /auth/oauth/github`) but the auth dialog only shows Google and Discord buttons. `getOAuthUrl()` in `authApi.ts` is typed for `"google" | "discord"` only. Users can still link GitHub manually via the wallet claim form.
+**Issue:** The API supports GitHub OAuth (`GET /auth/oauth/github`) but the auth dialog only shows Google and Discord buttons. `getOAuthUrl()` in `authApi.ts` is typed for `"google" | "discord"` only. Users can still link GitHub manually via the wallet claim form.  
+**Fix:** Widened `getOAuthUrl` type to include `"github"`, updated `handleOAuth` parameter type, changed grid from 2 to 3 columns, and added GitHub button with SVG icon next to Discord button.
 
-### 13. Wallet GitHub claim targets only web repo
+### 13. ✅ Fixed: Wallet GitHub claim targets only web repo
 **File:** `src/app/(private)/wallet/page.tsx`, `src/lib/api/authApi.ts`  
-**Issue:** The UI only links to `video-insight-web` and sends no `repo` field to the API (API defaults to `"web"`). Users cannot claim credits for starring/forking `video-insight-api` from the frontend.
+**Issue:** The UI only links to `video-insight-web` and sends no `repo` field to the API (API defaults to `"web"`). Users cannot claim credits for starring/forking `video-insight-api` from the frontend.  
+**Fix:** Added four claim rows (star/fork × web/api), updated `claimGithubCredits` to accept `repo` param, replaced GitHub OAuth link flow with linked-account detection and CTA.
 
-### 14. No success/error distinction on GitHub claim
+### 14. ✅ Fixed: No success/error distinction on GitHub claim
 **File:** `src/app/(private)/wallet/page.tsx`  
-**Issue:** `handleClaimGithub` shows a single generic error string on failure. No distinction between "not found" (404), "already claimed" (409), and "rate limited" (429). No success state shown after claim — the credits update silently via query invalidation.
+**Issue:** `handleClaimGithub` shows a single generic error string on failure. No distinction between "not found" (404), "already claimed" (409), and "rate limited" (429). No success state shown after claim — the credits update silently via query invalidation.  
+**Fix:** `handleClaimGithub` now maps HTTP status codes (404/409/429/other) to distinct i18n error messages. Claimed state is shown per-row via `user.githubStar/ForkClaimedWeb/Api` flags.
 
-### 15. "Buy Credits" dialog has no payment integration
+### 15. ✅ Fixed — converted to Earn Credits section: "Buy Credits" dialog has no payment integration
 **File:** `src/app/(private)/wallet/page.tsx`  
-**Issue:** The package selection UI is complete but the "Buy Now" button just closes the dialog. No Stripe or other payment processor is wired.
+**Issue:** The package selection UI is complete but the "Buy Now" button just closes the dialog. No Stripe or other payment processor is wired.  
+**Fix:** Removed `creditPackages` array, `usd` formatter, `dialogOpen`/`selected` state, and the entire Dialog block. Replaced "Buy Credits" button with a smooth-scroll anchor `<a href="#earn-credits">`. Added a "Weekly Restore" informational card as the first card in the Earn Credits section (4-column grid). Added `getNextSundayLabel()` helper. Added i18n keys for weekly restore in both locales.
+
+### 16. ✅ Fixed: Referral URL param not parsed on signup
+**File:** `src/components/AuthDialog.tsx`, `src/types/auth.ts`, `src/lib/api/authApi.ts`  
+**Issue:** The API accepts `referralCode` in `POST /auth/signup`, but the frontend never reads `?ref=` from the URL when the signup dialog opens. Users who follow a referral link get no referral attribution.  
+**Fix:** Added `referralCode` state to `AuthDialog`. Added `useEffect` to read `?ref=` from URL on mount. Updated `SignupFormData` interface to include optional `referralCode`. Updated `SignupData` in authApi to include optional `referralCode`. On signup, payload includes referral code if present in URL.
+
+### 17. ✅ Fixed: `getOAuthUrl` typed for Google/Discord only
+**File:** `src/lib/api/authApi.ts` line ~80  
+**Issue:** Function signature is `getOAuthUrl(provider: "google" | "discord")` — `"github"` is excluded.  
+**Fix:** Widened to `"google" | "discord" | "github"`. Done as part of bug #12 (GitHub OAuth button).
+
+### 18. ✅ Fixed: No `middleware.ts` — private routes unprotected at router level
+**Files:** `src/middleware.ts`, `src/app/(private)/layout.tsx`  
+**Issue:** Private routes (`/dashboard`, `/wallet`, `/submissions/*`) had no Next.js middleware guard. Auth was enforced only via Redux state + Axios 401 interceptor. Unauthenticated direct-URL access would hit the API before being redirected.  
+**Fix:** Added `src/middleware.ts` with `matcher` for `/dashboard/:path*`, `/wallet/:path*`, `/submissions/:path*`; redirects to `/` if no `auth_token` cookie. Also includes legacy URL redirects (trailing slashes, common typos), header-based Bearer token fallback, and security headers (CSP, X-Frame-Options, Referrer-Policy).
+
+### 19. ✅ Fixed: Wallet GitHub claim section only shows web repo
+**File:** `src/app/(private)/wallet/page.tsx`  
+**Fix:** Done as part of bug #13 — four claim rows now shown (star/fork × web/api). See bug #13 for full details.
+
+### 20. ✅ Fixed: "Process Video" button text hardcoded in `video-preview.tsx`
+**File:** `src/components/submissions/video-preview.tsx` line ~96  
+**Issue:** Button label is a hardcoded English string, not using the i18n `t()` hook.  
+**Fix:** Replaced "Process Video" with `t("dashboard.submit.button")` and "Cancel" with `t("dashboard.submit.cancel")`. Added `useT()` hook import and initialization. Added `dashboard.submit.cancel` key to both en.ts and pt-br.ts locale files.
 
 ---
 

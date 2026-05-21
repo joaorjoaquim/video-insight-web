@@ -8,6 +8,11 @@ export interface User {
   credits: number;
   createdAt: string;
   updatedAt: string;
+  githubUsername?: string | null;
+  githubStarClaimedWeb?: boolean;
+  githubForkClaimedWeb?: boolean;
+  githubStarClaimedApi?: boolean;
+  githubForkClaimedApi?: boolean;
 }
 
 export interface AuthState {
@@ -26,6 +31,7 @@ export interface LoginFormData {
 export interface SignupFormData {
   email: string;
   password: string;
+  referralCode?: string;
 }
 
 export interface AuthDialogState {

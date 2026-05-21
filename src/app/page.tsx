@@ -48,18 +48,18 @@ function LandingPage() {
               SummaryVideos
             </span>
           </div>
-          <nav className="flex items-center gap-6">
+          <nav className="flex items-center gap-3 sm:gap-6">
             <a
               href="https://github.com/joaorjoaquim/video-insight-web"
               target="_blank"
               rel="noopener noreferrer"
-              className="br-eyebrow hover:text-[var(--ink-1)] transition-colors"
+              className="hidden sm:block br-eyebrow hover:text-[var(--ink-1)] transition-colors"
             >
               {t('nav.github')}
             </a>
             <button
               onClick={() => setLocale(locale === 'en' ? 'pt-br' : 'en')}
-              className="font-[var(--font-mono-br,monospace)] text-[11px] font-medium tracking-[0.12em] uppercase text-[var(--ink-2)] hover:text-[var(--play)] border border-[var(--rule)] rounded px-1.5 py-0.5 transition-colors"
+              className="hidden sm:block font-[var(--font-mono-br,monospace)] text-[11px] font-medium tracking-[0.12em] uppercase text-[var(--ink-2)] hover:text-[var(--play)] border border-[var(--rule)] rounded px-1.5 py-0.5 transition-colors"
             >
               {t('lang.current')}
             </button>

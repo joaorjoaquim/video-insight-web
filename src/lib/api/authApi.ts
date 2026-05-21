@@ -3,6 +3,7 @@ import api from "./axios";
 export interface SignupData {
   email: string;
   password: string;
+  referralCode?: string;
 }
 
 export interface LoginData {
@@ -20,6 +21,11 @@ export interface User {
   credits: number;
   createdAt: string;
   updatedAt: string;
+  githubUsername?: string | null;
+  githubStarClaimedWeb?: boolean;
+  githubForkClaimedWeb?: boolean;
+  githubStarClaimedApi?: boolean;
+  githubForkClaimedApi?: boolean;
 }
 
 export interface Video {
@@ -77,15 +83,15 @@ export const getProfile = async (): Promise<User> => {
 };
 
 // OAuth redirect URLs
-export const getOAuthUrl = (provider: "google" | "discord"): string => {
+export const getOAuthUrl = (provider: "google" | "discord" | "github"): string => {
   return `${
     process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000"
   }/auth/oauth/${provider}`;
 };
 
 // Get user credits and transactions
-export const getCredits = async (): Promise<CreditsResponse> => {
-  const response = await api.get("/credits");
+export const getCredits = async (limit = 20, offset = 0): Promise<CreditsResponse> => {
+  const response = await api.get("/credits", { params: { limit, offset } });
   return response.data;
 };
 
@@ -107,10 +113,10 @@ export interface ClaimGithubResponse {
 }
 
 export const claimGithubCredits = async (
-  githubUsername: string,
-  action: "star" | "fork"
+  action: "star" | "fork",
+  repo: "web" | "api"
 ): Promise<ClaimGithubResponse> => {
-  const response = await api.post("/credits/claim/github", { githubUsername, action });
+  const response = await api.post("/credits/claim/github", { action, repo });
   return response.data;
 };
 
@@ -124,4 +130,9 @@ export interface ReferralInfo {
 export const getReferralInfo = async (): Promise<ReferralInfo> => {
   const response = await api.get("/user/referral");
   return response.data;
+};
+
+export const getGithubLinkUrl = async (): Promise<string> => {
+  const response = await api.get('/auth/link/github');
+  return response.data.url;
 };

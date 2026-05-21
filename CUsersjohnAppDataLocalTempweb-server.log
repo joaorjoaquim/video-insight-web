@@ -1,0 +1,43 @@
+npm warn Unknown project config "build-from-source". This will stop working in the next major version of npm.
+npm warn config production Use `--omit=dev` instead.
+
+> video-insight-web@0.1.0 dev
+> next dev --turbopack
+
+   ▲ Next.js 15.5.18 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.100.3:3000
+   - Environments: .env
+
+ ✓ Starting...
+ ✓ Compiled middleware in 433ms
+ ✓ Ready in 8.6s
+ ○ Compiling / ...
+ ✓ Compiled / in 4.2s
+ GET / 200 in 6454ms
+ GET / 200 in 197ms
+ ✓ Compiled /favicon.ico in 288ms
+ GET /favicon.ico?favicon.bf95f7c6.ico 200 in 742ms
+ GET /?ref=testref123 200 in 133ms
+ GET / 200 in 90ms
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 1014ms
+ GET /dashboard 200 in 1161ms
+ GET /dashboard 200 in 100ms
+ ✓ Compiled /wallet in 324ms
+ GET /wallet 200 in 419ms
+ ✓ Compiled in 128ms
+ ✓ Compiled in 111ms
+ ✓ Compiled in 94ms
+ ✓ Compiled /wallet in 54ms
+ GET /wallet 200 in 167ms
+ ✓ Compiled in 76ms
+ ✓ Compiled in 99ms
+ ✓ Compiled in 79ms
+ ✓ Compiled in 176ms
+ ✓ Compiled in 107ms
+ GET /wallet 200 in 3746ms
+ GET /wallet 200 in 112ms
+ GET /dashboard 200 in 889ms
+ GET / 200 in 652ms
+ GET /dashboard 200 in 72ms

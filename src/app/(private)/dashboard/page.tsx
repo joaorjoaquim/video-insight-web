@@ -67,7 +67,7 @@ export default function DashboardPage() {
   };
 
   const handleProcessVideo = async () => {
-    if (!videoMetadata) return;
+    if (!videoMetadata || submitVideoMutation.isPending) return;
     try {
       await submitVideoMutation.mutateAsync({ videoUrl: videoMetadata.url });
       setVideoMetadata(null);
@@ -106,7 +106,7 @@ export default function DashboardPage() {
                 <label className="br-eyebrow block mb-2" htmlFor="video-url">
                   {t("dashboard.submit.label")}
                 </label>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <input
                     id="video-url"
                     {...register("url", { required: true })}
@@ -118,7 +118,7 @@ export default function DashboardPage() {
                     type="button"
                     onClick={handleProcessVideo}
                     disabled={videoMetadata === null || submitVideoMutation.isPending}
-                    className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold bg-[var(--play)] hover:bg-[var(--play-700)] disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-[6px] transition-colors whitespace-nowrap"
+                    className="flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 text-sm font-semibold bg-[var(--play)] hover:bg-[var(--play-700)] disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-[6px] transition-colors whitespace-nowrap"
                   >
                     {t("dashboard.submit.button")}
                     <span className="inline-block w-0 h-0 border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent border-l-[6px] border-l-white" />

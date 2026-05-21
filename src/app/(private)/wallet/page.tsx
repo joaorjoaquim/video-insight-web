@@ -1,45 +1,49 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PrivateHeader from "../../../components/layout/private-header";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "../../../components/ui/dialog";
-import { useAppSelector } from "../../../core/hooks";
+import { useAppSelector, useAppDispatch } from "../../../core/hooks";
+import { fetchProfile } from "../../../core/slices/authSlice";
 import { useCredits, useRedeemPromoCode, useClaimGithubCredits, useReferralInfo } from "../../../lib/api/hooks";
+import { getGithubLinkUrl } from "../../../lib/api/authApi";
 import { useT } from "../../../lib/i18n";
 import { Reveal } from "../../../components/ui/reveal";
 import { CustomSelect } from "../../../components/ui/custom-select";
 
-const creditPackages = [
-  { id: "starter",    name: "STARTER",    amount: 10,  price: 9.90,  per: 0.99 },
-  { id: "popular",    name: "POPULAR",    amount: 25,  price: 19.75, per: 0.79, recommended: true },
-  { id: "pro",        name: "PRO",        amount: 50,  price: 34.50, per: 0.69 },
-  { id: "enterprise", name: "ENTERPRISE", amount: 100, price: 59.00, per: 0.59 },
-];
-
-const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+function getNextSundayLabel(): string {
+  const now = new Date();
+  const day = now.getDay(); // 0 = Sunday
+  const daysUntilSunday = day === 0 ? 7 : 7 - day;
+  const next = new Date(now);
+  next.setDate(now.getDate() + daysUntilSunday);
+  return next.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
+}
 
 export default function WalletPage() {
   const t = useT();
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [selected, setSelected] = useState<string | null>("popular");
+  const dispatch = useAppDispatch();
   const [filterType, setFilterType] = useState("all");
   const [filterPeriod, setFilterPeriod] = useState("30days");
+  const [page, setPage] = useState(1);
+  const ITEMS_PER_PAGE = 20;
 
   // Earn credits state
   const [promoCode, setPromoCode] = useState("");
   const [promoResult, setPromoResult] = useState<{ ok: boolean; msg: string } | null>(null);
-  const [githubUsername, setGithubUsername] = useState("");
   const [githubError, setGithubError] = useState<string | null>(null);
   const [referralCopied, setReferralCopied] = useState(false);
 
   const { user } = useAppSelector((state: any) => state.auth);
-  const { data: creditsData, isLoading, error } = useCredits();
+  const { data: creditsData, isLoading, error } = useCredits(page, ITEMS_PER_PAGE);
   const redeemMutation = useRedeemPromoCode();
   const claimGithubMutation = useClaimGithubCredits();
   const { data: referralData, isLoading: referralLoading } = useReferralInfo();
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('github_linked') === '1') {
+      dispatch(fetchProfile());
+      window.history.replaceState({}, '', '/wallet');
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const credits = creditsData?.credits ?? user?.credits ?? 0;
   const transactions = creditsData?.transactions || [];
@@ -87,13 +91,26 @@ export default function WalletPage() {
     }
   };
 
-  const handleClaimGithub = async (action: "star" | "fork") => {
-    if (!githubUsername.trim()) return;
+  const handleClaimGithub = async (action: "star" | "fork", repo: "web" | "api") => {
     setGithubError(null);
     try {
-      await claimGithubMutation.mutateAsync({ githubUsername: githubUsername.trim(), action });
+      await claimGithubMutation.mutateAsync({ action, repo });
+      dispatch(fetchProfile());
+    } catch (err: any) {
+      const status = err?.response?.status;
+      if (status === 404) setGithubError(t("wallet.earn.github.error.notFound"));
+      else if (status === 409) setGithubError(t("wallet.earn.github.error.claimed"));
+      else if (status === 429) setGithubError(t("wallet.earn.github.error.rateLimit"));
+      else setGithubError(t("wallet.earn.github.error.generic"));
+    }
+  };
+
+  const handleConnectGithub = async () => {
+    try {
+      const url = await getGithubLinkUrl();
+      window.location.href = url;
     } catch {
-      setGithubError(t("wallet.earn.github.error"));
+      // silent fail — user stays on page
     }
   };
 
@@ -133,16 +150,16 @@ export default function WalletPage() {
               <div className="br-eyebrow mb-6">
                 {lastTransactionDate && `${t("wallet.balance.lastTx")} · ${lastTransactionDate} · `}~{estimatedVideos} {t("wallet.balance.videosLeft")}
               </div>
-              <button
-                onClick={() => setDialogOpen(true)}
+              <a
+                href="#earn-credits"
                 className="flex items-center gap-2 px-5 py-3 text-sm font-semibold bg-[var(--play)] hover:bg-[var(--play-700)] text-white rounded-[6px] transition-colors"
               >
                 {t("wallet.balance.buyBtn")}
                 <span className="inline-block w-0 h-0 border-t-[5px] border-t-transparent border-b-[5px] border-b-transparent border-l-[8px] border-l-white" />
-              </button>
+              </a>
 
               {/* Stats */}
-              <div className="grid grid-cols-3 gap-8 mt-10 pt-8 border-t border-[var(--rule)]">
+              <div className="grid grid-cols-3 gap-3 sm:gap-8 mt-10 pt-8 border-t border-[var(--rule)]">
                 {[
                   { label: t("wallet.stats.purchased"), value: totalPurchased, accent: false },
                   { label: t("wallet.stats.used"),      value: totalUsed,      accent: false },
@@ -151,7 +168,7 @@ export default function WalletPage() {
                   <div key={i}>
                     <div className="br-eyebrow mb-2">{stat.label}</div>
                     <div
-                      style={{ fontFamily: "var(--font-display-br, Georgia, serif)", fontSize: "2.5rem", lineHeight: 1, letterSpacing: "-0.02em", fontStyle: stat.accent ? "italic" : "normal", color: stat.accent ? "var(--play)" : "var(--ink-1)" }}
+                      style={{ fontFamily: "var(--font-display-br, Georgia, serif)", fontSize: "clamp(1.5rem, 4vw, 2.5rem)", lineHeight: 1, letterSpacing: "-0.02em", fontStyle: stat.accent ? "italic" : "normal", color: stat.accent ? "var(--play)" : "var(--ink-1)" }}
                     >
                       {stat.value}
                     </div>
@@ -218,7 +235,8 @@ export default function WalletPage() {
                   <p className="text-[var(--ink-2)] text-sm">{t("wallet.ledger.empty.sub")}</p>
                 </div>
               ) : (
-                <table className="w-full text-sm border-collapse">
+                <div className="overflow-x-auto -mx-1 px-1">
+                <table className="w-full text-sm border-collapse min-w-[480px]">
                   <thead>
                     <tr className="border-b border-[var(--rule)]">
                       {[t("wallet.ledger.col.type"), t("wallet.ledger.col.description"), t("wallet.ledger.col.amount"), t("wallet.ledger.col.status")].map((h, i) => (
@@ -246,11 +264,32 @@ export default function WalletPage() {
                     ))}
                   </tbody>
                 </table>
+                </div>
               )}
 
-              {filteredTransactions.length > 0 && (
-                <div className="br-eyebrow mt-4">
-                  {t("wallet.ledger.showing")} {filteredTransactions.length} {t("wallet.ledger.of")} {transactions.length} {t("wallet.ledger.transactions")}
+              {creditsData?.pagination && (
+                <div className="flex flex-wrap items-center justify-between gap-2 mt-4">
+                  <div className="br-eyebrow">
+                    {t("wallet.ledger.showing")} {Math.min(page * ITEMS_PER_PAGE, creditsData.pagination.total)} {t("wallet.ledger.of")} {creditsData.pagination.total} {t("wallet.ledger.transactions")}
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      disabled={page === 1}
+                      className="px-3 py-1.5 text-xs border border-[var(--rule)] rounded-[4px] disabled:opacity-40 hover:border-[var(--ink-2)] transition-colors br-eyebrow"
+                    >
+                      ← {t("wallet.ledger.prev")}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPage((p) => p + 1)}
+                      disabled={page * ITEMS_PER_PAGE >= creditsData.pagination.total}
+                      className="px-3 py-1.5 text-xs border border-[var(--rule)] rounded-[4px] disabled:opacity-40 hover:border-[var(--ink-2)] transition-colors br-eyebrow"
+                    >
+                      {t("wallet.ledger.next")} →
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -261,7 +300,7 @@ export default function WalletPage() {
 
         {/* § 03 Earn Credits */}
         <Reveal delay={2}>
-          <section className="grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-8 pb-24">
+          <section id="earn-credits" className="grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-8 pb-24">
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <span className="logo-bars"><i/><i/><i/></span>
@@ -277,7 +316,22 @@ export default function WalletPage() {
                 {t("wallet.earn.headline")} <span className="ital-bar">{t("wallet.earn.headlineAccent")}</span>
               </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                {/* Weekly Restore */}
+                <div className="border border-[var(--rule)] rounded-[10px] p-5 bg-white dark:bg-zinc-900 flex flex-col gap-3">
+                  <div>
+                    <div className="br-eyebrow mb-1">{t("wallet.earn.weekly.title")}</div>
+                    <p className="text-[var(--ink-2)] text-xs leading-relaxed">{t("wallet.earn.weekly.sub")}</p>
+                  </div>
+                  <div className="mt-auto">
+                    <div style={{ fontFamily: "var(--font-display-br, Georgia, serif)", fontSize: "2rem", lineHeight: 1, letterSpacing: "-0.02em" }} className="text-[var(--play)]">100</div>
+                    <div className="br-eyebrow mt-1">{t("wallet.earn.weekly.amount")}</div>
+                  </div>
+                  <div className="pt-3 border-t border-[var(--rule)]">
+                    <div className="br-eyebrow">{t("wallet.earn.weekly.next")}: {getNextSundayLabel()}</div>
+                  </div>
+                </div>
 
                 {/* Promo Code */}
                 <div className="border border-[var(--rule)] rounded-[10px] p-5 bg-white dark:bg-zinc-900 flex flex-col gap-3">
@@ -314,41 +368,50 @@ export default function WalletPage() {
                     <div className="br-eyebrow mb-1">{t("wallet.earn.github.title")}</div>
                     <p className="text-[var(--ink-2)] text-xs leading-relaxed">{t("wallet.earn.github.sub")}</p>
                   </div>
-                  <input
-                    value={githubUsername}
-                    onChange={(e) => { setGithubUsername(e.target.value); setGithubError(null); }}
-                    placeholder={t("wallet.earn.github.placeholder")}
-                    className="border border-[var(--rule)] rounded-[6px] px-3 py-2 text-sm bg-white dark:bg-zinc-900 text-[var(--ink-1)] placeholder:text-[var(--ink-3)] focus:outline-none focus:border-[var(--bars)] transition-colors"
-                  />
-                  {githubError && <p className="text-xs text-[var(--led-failed)]">{githubError}</p>}
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleClaimGithub("star")}
-                      disabled={!githubUsername.trim() || claimGithubMutation.isPending}
-                      className="flex-1 px-3 py-1.5 text-[11px] font-medium border border-[var(--rule)] rounded-[4px] hover:border-[var(--bars)] hover:text-[var(--bars)] disabled:opacity-40 transition-colors"
-                      style={{ fontFamily: "var(--font-mono-br, monospace)" }}
-                    >
-                      {t("wallet.earn.github.star")}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleClaimGithub("fork")}
-                      disabled={!githubUsername.trim() || claimGithubMutation.isPending}
-                      className="flex-1 px-3 py-1.5 text-[11px] font-medium border border-[var(--rule)] rounded-[4px] hover:border-[var(--bars)] hover:text-[var(--bars)] disabled:opacity-40 transition-colors"
-                      style={{ fontFamily: "var(--font-mono-br, monospace)" }}
-                    >
-                      {t("wallet.earn.github.fork")}
-                    </button>
-                  </div>
-                  <a
-                    href="https://github.com/joaorjoaquim/video-insight-web"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="br-eyebrow hover:text-[var(--bars)] transition-colors mt-auto"
-                  >
-                    {t("wallet.earn.github.link")}
-                  </a>
+
+                  {!user?.githubUsername ? (
+                    <>
+                      <p className="text-[var(--ink-3)] text-xs">{t("wallet.earn.github.notLinked")}</p>
+                      <button
+                        type="button"
+                        onClick={handleConnectGithub}
+                        className="mt-auto flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold bg-[var(--ink-1)] hover:opacity-80 text-[var(--briefing-bg)] rounded-[6px] transition-opacity"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden>
+                          <path fill="currentColor" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/>
+                        </svg>
+                        {t("wallet.earn.github.connect")}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <p className="br-eyebrow text-[var(--led-completed)]">@{user.githubUsername}</p>
+                      {githubError && <p className="text-xs text-[var(--led-failed)]">{githubError}</p>}
+                      {[
+                        { action: "star" as const, repo: "web" as const, label: t("wallet.earn.github.star"), claimed: user.githubStarClaimedWeb },
+                        { action: "fork" as const, repo: "web" as const, label: t("wallet.earn.github.fork"), claimed: user.githubForkClaimedWeb },
+                        { action: "star" as const, repo: "api" as const, label: t("wallet.earn.github.starApi"), claimed: user.githubStarClaimedApi },
+                        { action: "fork" as const, repo: "api" as const, label: t("wallet.earn.github.forkApi"), claimed: user.githubForkClaimedApi },
+                      ].map(({ action, repo, label, claimed }) => (
+                        <div key={`${action}-${repo}`} className="flex items-center justify-between gap-2">
+                          <span className="text-xs text-[var(--ink-2)]">{label}</span>
+                          {claimed ? (
+                            <span className="br-eyebrow text-[var(--led-completed)]">{t("wallet.earn.github.claimed")}</span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleClaimGithub(action, repo)}
+                              disabled={claimGithubMutation.isPending}
+                              className="px-3 py-1 text-[10px] font-medium border border-[var(--rule)] rounded-[4px] hover:border-[var(--bars)] hover:text-[var(--bars)] disabled:opacity-40 transition-colors"
+                              style={{ fontFamily: "var(--font-mono-br, monospace)" }}
+                            >
+                              {t("wallet.earn.github.claim")}
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </>
+                  )}
                 </div>
 
                 {/* Referral */}
@@ -393,61 +456,6 @@ export default function WalletPage() {
         </Reveal>
       </main>
 
-      {/* Buy credits dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl bg-[var(--briefing-bg)] border border-[var(--rule)] rounded-[14px] p-8">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="logo-bars"><i/><i/><i/></span>
-            <span className="br-eyebrow">§ {t("wallet.modal.section")}</span>
-          </div>
-          <DialogTitle
-            style={{ fontFamily: "var(--font-display-br, Georgia, serif)", fontSize: "1.75rem", letterSpacing: "-0.012em" }}
-            className="text-[var(--ink-1)] mb-1"
-          >
-            {t("wallet.modal.headline")} <span className="ital-bar">{t("wallet.modal.headlineAccent")}</span>.
-          </DialogTitle>
-          <p className="br-eyebrow mb-7">{t("wallet.modal.sub")}</p>
-
-          <div className="stagger-list grid grid-cols-2 md:grid-cols-4 gap-3 mb-7">
-            {creditPackages.map((pkg) => (
-              <button
-                key={pkg.id}
-                onClick={() => setSelected(pkg.id)}
-                className={`relative border rounded-[10px] p-4 flex flex-col gap-1.5 text-left transition-colors ${
-                  selected === pkg.id
-                    ? "border-[var(--bars)] bg-white dark:bg-zinc-900"
-                    : "border-[var(--rule)] bg-white dark:bg-zinc-900 hover:border-[var(--ink-2)]"
-                }`}
-              >
-                {pkg.recommended && (
-                  <div className="absolute -top-2.5 left-3 bg-[var(--play)] text-white text-[9px] font-medium tracking-[0.1em] px-2 py-0.5 rounded-[3px]" style={{ fontFamily: "var(--font-mono-br, monospace)" }}>
-                    {t("wallet.modal.recommended")}
-                  </div>
-                )}
-                <div className="br-eyebrow">{pkg.name}</div>
-                <div style={{ fontFamily: "var(--font-display-br, Georgia, serif)", fontSize: "1.6rem", lineHeight: 1 }} className="text-[var(--ink-1)]">
-                  {pkg.amount}
-                  <small className="text-xs ml-1" style={{ fontFamily: "var(--font-sans-br)" }}>cr</small>
-                </div>
-                <div className="br-eyebrow">{usd.format(pkg.per)}{t("wallet.modal.perCredit")}</div>
-                <div className="mt-auto pt-2 border-t border-[var(--rule)]">
-                  <div style={{ fontFamily: "var(--font-display-br, Georgia, serif)", fontSize: "1.2rem" }} className="text-[var(--ink-1)]">{usd.format(pkg.price)}</div>
-                </div>
-              </button>
-            ))}
-          </div>
-
-          <button
-            type="button"
-            disabled={!selected}
-            className="w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold bg-[var(--play)] hover:bg-[var(--play-700)] disabled:opacity-40 text-white rounded-[6px] transition-colors"
-            onClick={() => setDialogOpen(false)}
-          >
-            {t("wallet.modal.buyNow")}
-            <span className="inline-block w-0 h-0 border-t-[5px] border-t-transparent border-b-[5px] border-b-transparent border-l-[8px] border-l-white" />
-          </button>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

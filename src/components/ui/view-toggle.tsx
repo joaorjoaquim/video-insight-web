@@ -20,7 +20,7 @@ export default function ViewToggle({ currentView, views, onViewChange }: ViewTog
             className={`px-3 py-1.5 text-[11px] font-medium tracking-[0.08em] uppercase transition-colors ${
               isActive
                 ? "bg-[var(--bars)] text-white"
-                : "bg-transparent text-[var(--ink-2)] hover:text-[var(--ink-1)] hover:bg-[var(--rule-soft)]"
+                : "bg-transparent text-[var(--ink-2)] hover:text-[var(--ink-1)] hover:bg-[var(--play)]/10"
             }`}
             style={{ fontFamily: "var(--font-mono-br, monospace)" }}
           >
