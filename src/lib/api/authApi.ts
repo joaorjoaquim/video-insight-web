@@ -53,9 +53,8 @@ export interface CreditsResponse {
   credits: number;
   transactions: Transaction[];
   pagination: {
-    total: number;
+    nextCursor: string | null;
     limit: number;
-    offset: number;
   };
 }
 
@@ -90,8 +89,8 @@ export const getOAuthUrl = (provider: "google" | "discord" | "github"): string =
 };
 
 // Get user credits and transactions
-export const getCredits = async (limit = 20, offset = 0): Promise<CreditsResponse> => {
-  const response = await api.get("/credits", { params: { limit, offset } });
+export const getCredits = async (limit = 20, cursor?: string): Promise<CreditsResponse> => {
+  const response = await api.get("/credits", { params: { limit, ...(cursor ? { cursor } : {}) } });
   return response.data;
 };
 

@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import {
   videoInsightApi,
   queryKeys,
@@ -118,13 +118,14 @@ export const useVideoStatusUpdate = () => {
 };
 
 // Hook for fetching credits and transactions
-export const useCredits = (page = 1, limit = 20) => {
-  const offset = (page - 1) * limit;
-  return useQuery({
-    queryKey: ["credits", page],
-    queryFn: () => getCredits(limit, offset),
+export const useCredits = (limit = 20) => {
+  return useInfiniteQuery({
+    queryKey: ["credits", limit],
+    queryFn: ({ pageParam }: { pageParam?: string }) => getCredits(limit, pageParam),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.pagination.nextCursor ?? undefined,
     staleTime: 30 * 1000,
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: false,
   });
 };
 

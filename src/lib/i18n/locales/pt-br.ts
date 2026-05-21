@@ -144,6 +144,7 @@ export const ptBr = {
   'wallet.ledger.empty.sub': 'Seu histórico aparecerá aqui quando você começar a usar créditos.',
   'wallet.ledger.error': 'Falha ao carregar transações',
   'wallet.ledger.loading': 'Carregando transações…',
+  'wallet.ledger.loadMore': 'Carregar mais',
   'wallet.ledger.col.type': 'Tipo',
   'wallet.ledger.col.description': 'Descrição',
   'wallet.ledger.col.amount': 'Valor',

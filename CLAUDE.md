@@ -337,6 +337,11 @@ All requests go to `NEXT_PUBLIC_API_BASE_URL`. Auth token added as `Authorizatio
 **Issue:** URL input + submit button always rendered as a flex row, causing the button to shrink below usable tap size on mobile.  
 **Fix:** Changed submit row to `flex-col sm:flex-row` with `w-full sm:w-auto` on the button so it stacks vertically on xs and returns to row layout on ≥640px.
 
+### 30. ✅ Fixed: Wallet pagination client/server conflict + load-more UX
+**Files:** `src/lib/api/authApi.ts`, `src/lib/api/hooks.ts`, `src/app/(private)/wallet/page.tsx`  
+**Issue:** Server paginates with LIMIT/OFFSET; client applied an additional 30-day filter after receiving each page. Page 2+ returned older transactions that all got filtered out → empty list despite "Next" button being enabled. `useCredits` used `useQuery` with `page` state; query key `["credits"]` didn't include `limit`, causing cache collisions between `limit=20` (all-time mode) and `limit=200` (filtered mode). `refetchOnWindowFocus: true` on the paginated query caused multi-page refetch storms on tab return.  
+**Fix:** Replaced with `useInfiniteQuery` using compound cursor pagination (matching API's new cursor format). `queryKey: ["credits", limit]` includes limit for cache identity. `refetchOnWindowFocus: false`. Filter-period change resets the query; filter-type change is client-side only (no reset). UI changed from Prev/Next to "Load more" button. Stats row dims (`opacity-50`) while loading additional pages to signal partial totals.
+
 ---
 
 ## Data Flow: Video Submission

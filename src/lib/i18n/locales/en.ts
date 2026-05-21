@@ -144,6 +144,7 @@ export const en = {
   'wallet.ledger.empty.sub': 'Your history will appear here once you start using credits.',
   'wallet.ledger.error': 'Failed to load transactions',
   'wallet.ledger.loading': 'Loading transactions…',
+  'wallet.ledger.loadMore': 'Load more',
   'wallet.ledger.col.type': 'Type',
   'wallet.ledger.col.description': 'Description',
   'wallet.ledger.col.amount': 'Amount',

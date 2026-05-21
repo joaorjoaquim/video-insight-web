@@ -4,6 +4,7 @@ import PrivateHeader from "../../../components/layout/private-header";
 import { useAppSelector, useAppDispatch } from "../../../core/hooks";
 import { fetchProfile } from "../../../core/slices/authSlice";
 import { useCredits, useRedeemPromoCode, useClaimGithubCredits, useReferralInfo } from "../../../lib/api/hooks";
+import { useQueryClient } from "@tanstack/react-query";
 import { getGithubLinkUrl } from "../../../lib/api/authApi";
 import { useT, useI18n } from "../../../lib/i18n";
 import { Reveal } from "../../../components/ui/reveal";
@@ -25,8 +26,6 @@ export default function WalletPage() {
   const dispatch = useAppDispatch();
   const [filterType, setFilterType] = useState("all");
   const [filterPeriod, setFilterPeriod] = useState("30days");
-  const [page, setPage] = useState(1);
-  const ITEMS_PER_PAGE = 20;
 
   // Earn credits state
   const [promoCode, setPromoCode] = useState("");
@@ -37,9 +36,16 @@ export default function WalletPage() {
   const [githubSuccess, setGithubSuccess] = useState(false);
 
   const { user } = useAppSelector((state: any) => state.auth);
-  const effectiveLimit = filterPeriod !== "all" ? 200 : ITEMS_PER_PAGE;
-  const effectivePage = filterPeriod !== "all" ? 1 : page;
-  const { data: creditsData, isLoading, error } = useCredits(effectivePage, effectiveLimit);
+  const queryClient = useQueryClient();
+  const effectiveLimit = filterPeriod !== "all" ? 200 : 20;
+  const {
+    data: creditsData,
+    isLoading,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useCredits(effectiveLimit);
   const redeemMutation = useRedeemPromoCode();
   const claimGithubMutation = useClaimGithubCredits();
   const { data: referralData, isLoading: referralLoading } = useReferralInfo();
@@ -101,28 +107,28 @@ export default function WalletPage() {
   }, [dispatch, t]);
 
   useEffect(() => {
-    setPage(1);
-  }, [filterPeriod, filterType]);
+    queryClient.resetQueries({ queryKey: ["credits"] });
+  }, [filterPeriod, queryClient]);
 
-  const credits = creditsData?.credits ?? user?.credits ?? 0;
-  const transactions = creditsData?.transactions || [];
+  const credits = creditsData?.pages[creditsData.pages.length - 1]?.credits ?? user?.credits ?? 0;
+  const allTransactions = creditsData?.pages.flatMap((p) => p.transactions) ?? [];
 
-  const totalPurchased = transactions
+  const totalPurchased = allTransactions
     .filter((tx: any) => tx.type === "purchase")
     .reduce((sum: number, tx: any) => sum + Math.abs(tx.amount), 0);
 
-  const totalUsed = transactions
+  const totalUsed = allTransactions
     .filter((tx: any) => tx.type === "spend")
     .reduce((sum: number, tx: any) => sum + Math.abs(tx.amount), 0);
 
   const estimatedVideos = Math.round(credits / 6);
 
-  const lastTransaction = transactions.length > 0 ? transactions[0] : null;
+  const lastTransaction = allTransactions.length > 0 ? allTransactions[0] : null;
   const lastTransactionDate = lastTransaction
     ? new Date(lastTransaction.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
     : null;
 
-  const filteredTransactions = transactions.filter((tx: any) => {
+  const filteredTransactions = allTransactions.filter((tx: any) => {
     if (filterType !== "all" && tx.type !== filterType) return false;
     if (filterPeriod === "30days") {
       const cutoff = new Date();
@@ -223,7 +229,7 @@ export default function WalletPage() {
               </a>
 
               {/* Stats */}
-              <div className="grid grid-cols-3 gap-3 sm:gap-8 mt-10 pt-8 border-t border-[var(--rule)]">
+              <div className={`grid grid-cols-3 gap-3 sm:gap-8 mt-10 pt-8 border-t border-[var(--rule)] transition-opacity ${isFetchingNextPage && hasNextPage ? "opacity-50" : ""}`}>
                 {[
                   { label: t("wallet.stats.purchased"), value: totalPurchased, accent: false },
                   { label: t("wallet.stats.used"),      value: totalUsed,      accent: false },
@@ -332,29 +338,23 @@ export default function WalletPage() {
                 </div>
               )}
 
-              {creditsData?.pagination && filterPeriod === "all" && (
-                <div className="flex flex-wrap items-center justify-between gap-2 mt-4">
-                  <div className="br-eyebrow">
-                    {t("wallet.ledger.showing")} {Math.min(page * ITEMS_PER_PAGE, creditsData.pagination.total)} {t("wallet.ledger.of")} {creditsData.pagination.total} {t("wallet.ledger.transactions")}
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setPage((p) => Math.max(1, p - 1))}
-                      disabled={page === 1}
-                      className="px-3 py-1.5 text-xs border border-[var(--rule)] rounded-[4px] disabled:opacity-40 hover:border-[var(--ink-2)] transition-colors br-eyebrow"
-                    >
-                      ← {t("wallet.ledger.prev")}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPage((p) => p + 1)}
-                      disabled={page * ITEMS_PER_PAGE >= creditsData.pagination.total}
-                      className="px-3 py-1.5 text-xs border border-[var(--rule)] rounded-[4px] disabled:opacity-40 hover:border-[var(--ink-2)] transition-colors br-eyebrow"
-                    >
-                      {t("wallet.ledger.next")} →
-                    </button>
-                  </div>
+              {filterPeriod === "all" && hasNextPage && (
+                <div className="flex justify-center mt-6">
+                  <button
+                    type="button"
+                    onClick={() => fetchNextPage()}
+                    disabled={isFetchingNextPage}
+                    className="px-5 py-2 text-sm border border-[var(--rule)] rounded-[6px] hover:border-[var(--ink-2)] disabled:opacity-40 transition-colors br-eyebrow"
+                  >
+                    {isFetchingNextPage ? (
+                      <span className="flex items-center gap-2">
+                        <span className="bars-loader scale-75 origin-center"><i/><i/><i/><i/></span>
+                        {t("wallet.ledger.loading")}
+                      </span>
+                    ) : (
+                      t("wallet.ledger.loadMore")
+                    )}
+                  </button>
                 </div>
               )}
             </div>
