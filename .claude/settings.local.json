@@ -64,7 +64,8 @@
       "Bash(npx playwright *)",
       "Bash(npm list *)",
       "Bash(node pw-test.mjs)",
-      "Bash(taskkill *)"
+      "Bash(taskkill *)",
+      "Bash(grep -v \"//.*isPending\")"
     ]
   }
 }

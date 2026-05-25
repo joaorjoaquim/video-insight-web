@@ -85,10 +85,10 @@ export default function VideoPreview({
           type="button"
           onClick={onProcess}
           disabled={isProcessing}
-          className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold bg-[var(--play)] hover:bg-[var(--play-700)] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-[6px] transition-colors"
+          className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold bg-[var(--play)] hover:bg-[var(--play-700)] disabled:cursor-not-allowed text-white rounded-[6px] transition-colors"
         >
           {isProcessing ? (
-            <span className="bars-loader scale-75 origin-center"><i/><i/><i/><i/></span>
+            <span className="bars-loader scale-75 origin-center [&_i]:bg-white"><i/><i/><i/><i/></span>
           ) : (
             <>
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>

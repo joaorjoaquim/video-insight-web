@@ -118,10 +118,16 @@ export default function DashboardPage() {
                     type="button"
                     onClick={handleProcessVideo}
                     disabled={videoMetadata === null || submitVideoMutation.isPending}
-                    className="flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 text-sm font-semibold bg-[var(--play)] hover:bg-[var(--play-700)] disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-[6px] transition-colors whitespace-nowrap"
+                    className="flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 text-sm font-semibold bg-[var(--play)] hover:bg-[var(--play-700)] disabled:cursor-not-allowed text-white rounded-[6px] transition-colors whitespace-nowrap"
                   >
-                    {t("dashboard.submit.button")}
-                    <span className="inline-block w-0 h-0 border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent border-l-[6px] border-l-white" />
+                    {submitVideoMutation.isPending ? (
+                      <span className="bars-loader scale-75 [&_i]:bg-white"><i/><i/><i/><i/></span>
+                    ) : (
+                      <>
+                        {t("dashboard.submit.button")}
+                        <span className="inline-block w-0 h-0 border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent border-l-[6px] border-l-white" />
+                      </>
+                    )}
                   </button>
                 </div>
                 {errors.url && <p className="text-[var(--led-failed)] text-xs mt-1.5">{t("validation.url")}</p>}

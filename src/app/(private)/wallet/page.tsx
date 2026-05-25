@@ -35,6 +35,7 @@ export default function WalletPage() {
   const [githubError, setGithubError] = useState<string | null>(null);
   const [referralCopied, setReferralCopied] = useState(false);
   const [githubLinking, setGithubLinking] = useState(false);
+  const [claimingKey, setClaimingKey] = useState<string | null>(null);
   const [githubSuccess, setGithubSuccess] = useState(false);
 
   const { user } = useAppSelector((state: any) => state.auth);
@@ -43,6 +44,7 @@ export default function WalletPage() {
   const {
     data: creditsData,
     isLoading,
+    isFetching,
     error,
     fetchNextPage,
     hasNextPage,
@@ -159,7 +161,9 @@ export default function WalletPage() {
   };
 
   const handleClaimGithub = async (action: "star" | "fork", repo: "web" | "api") => {
+    const key = `${action}-${repo}`;
     setGithubError(null);
+    setClaimingKey(key);
     try {
       await claimGithubMutation.mutateAsync({ action, repo });
       dispatch(fetchProfile());
@@ -169,6 +173,8 @@ export default function WalletPage() {
       else if (status === 409) setGithubError(t("wallet.earn.github.error.claimed"));
       else if (status === 429) setGithubError(t("wallet.earn.github.error.rateLimit"));
       else setGithubError(t("wallet.earn.github.error.generic"));
+    } finally {
+      setClaimingKey(null);
     }
   };
 
@@ -222,13 +228,14 @@ export default function WalletPage() {
               <div className="br-eyebrow mb-6">
                 {lastTransactionDate && `${t("wallet.balance.lastTx")} · ${lastTransactionDate} · `}~{estimatedVideos} {t("wallet.balance.videosLeft")}
               </div>
-              <a
-                href="#earn-credits"
+              <button
+                type="button"
+                onClick={() => document.getElementById("earn-credits")?.scrollIntoView({ behavior: "smooth" })}
                 className="flex items-center gap-2 px-5 py-3 text-sm font-semibold bg-[var(--play)] hover:bg-[var(--play-700)] text-[var(--ink-1)] rounded-[6px] transition-colors"
               >
                 {t("wallet.balance.buyBtn")}
                 <span className="inline-block w-0 h-0 border-t-[5px] border-t-transparent border-b-[5px] border-b-transparent border-l-[8px] border-l-white" />
-              </a>
+              </button>
 
               {/* Stats */}
               <div className={`grid grid-cols-3 gap-3 sm:gap-8 mt-10 pt-8 border-t border-[var(--rule)] transition-opacity ${isFetchingNextPage && hasNextPage ? "opacity-50" : ""}`}>
@@ -299,6 +306,11 @@ export default function WalletPage() {
                   <div className="bars-loader"><i/><i/><i/><i/></div>
                   <span className="br-eyebrow">{t("wallet.ledger.loading")}</span>
                 </div>
+              ) : isFetching && !isFetchingNextPage ? (
+                <div className="flex items-center gap-2 py-3">
+                  <span className="bars-loader scale-75"><i/><i/><i/><i/></span>
+                  <span className="br-eyebrow">{t("wallet.ledger.loading")}</span>
+                </div>
               ) : error ? (
                 <p className="text-[var(--led-failed)] text-sm py-8">{t("wallet.ledger.error")}</p>
               ) : filteredTransactions.length === 0 ? (
@@ -346,7 +358,7 @@ export default function WalletPage() {
                     type="button"
                     onClick={() => fetchNextPage()}
                     disabled={isFetchingNextPage}
-                    className="px-5 py-2 text-sm border border-[var(--rule)] rounded-[6px] hover:border-[var(--ink-2)] disabled:opacity-40 transition-colors br-eyebrow"
+                    className="px-5 py-2 text-sm border border-[var(--rule)] rounded-[6px] hover:border-[var(--ink-2)] transition-colors br-eyebrow"
                   >
                     {isFetchingNextPage ? (
                       <span className="flex items-center gap-2">
@@ -423,9 +435,11 @@ export default function WalletPage() {
                     type="button"
                     onClick={handleRedeemPromo}
                     disabled={!promoCode.trim() || redeemMutation.isPending}
-                    className="mt-auto px-4 py-2 text-sm font-semibold bg-[var(--play)] hover:bg-[var(--play-700)] disabled:opacity-50 disabled:cursor-not-allowed text-[var(--ink-1)] rounded-[6px] transition-colors"
+                    className="mt-auto flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold bg-[var(--play)] hover:bg-[var(--play-700)] disabled:cursor-not-allowed text-white rounded-[6px] transition-colors"
                   >
-                    {redeemMutation.isPending ? t("wallet.earn.promo.redeeming") : t("wallet.earn.promo.button")}
+                    {redeemMutation.isPending ? (
+                      <span className="bars-loader scale-75 origin-center [&_i]:bg-white"><i/><i/><i/><i/></span>
+                    ) : t("wallet.earn.promo.button")}
                   </button>
                 </div>
 
@@ -480,11 +494,13 @@ export default function WalletPage() {
                             <button
                               type="button"
                               onClick={() => handleClaimGithub(action, repo)}
-                              disabled={claimGithubMutation.isPending}
-                              className="px-3 py-1 text-[10px] font-medium border border-[var(--rule)] rounded-[4px] hover:border-[var(--bars)] hover:text-[var(--bars)] disabled:opacity-40 transition-colors"
+                              disabled={claimingKey !== null}
+                              className="flex items-center justify-center gap-1.5 px-3 py-1 text-[10px] font-medium border border-[var(--rule)] rounded-[4px] hover:border-[var(--bars)] hover:text-[var(--bars)] disabled:cursor-not-allowed transition-colors"
                               style={{ fontFamily: "var(--font-mono-br, monospace)" }}
                             >
-                              {t("wallet.earn.github.claim")}
+                              {claimingKey === `${action}-${repo}` ? (
+                                <span className="bars-loader scale-50 origin-center"><i/><i/><i/><i/></span>
+                              ) : t("wallet.earn.github.claim")}
                             </button>
                           )}
                         </div>

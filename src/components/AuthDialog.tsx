@@ -176,10 +176,10 @@ export function AuthDialog() {
           <button
             type="submit"
             disabled={isLoading || (mode === 'signup' && (!!passwordError || formData.password !== confirmPassword))}
-            className="flex items-center justify-center gap-2 w-full bg-[var(--play)] hover:bg-[var(--play-700)] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-[6px] transition-colors text-sm mt-1"
+            className="flex items-center justify-center gap-2 w-full bg-[var(--play)] hover:bg-[var(--play-700)] disabled:cursor-not-allowed text-white font-semibold py-3 rounded-[6px] transition-colors text-sm mt-1"
           >
             {isLoading ? (
-              <span className="bars-loader scale-75"><i/><i/><i/><i/></span>
+              <span className="bars-loader scale-75 [&_i]:bg-white"><i/><i/><i/><i/></span>
             ) : (
               <>
                 {mode === 'login' ? t('auth.submit.login') : t('auth.submit.signup')}
