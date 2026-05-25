@@ -183,13 +183,19 @@ html {
   height: 2.5px;
   border-radius: 1px;
   background: var(--bars);
+  animation: logo-bar-fill 2.4s var(--ease-mechanical) infinite;
 }
-.logo-bars i:nth-child(1) { width: 20px; }
-.logo-bars i:nth-child(2) { width: 14px; }
-.logo-bars i:nth-child(3) { width: 10px; }
+.logo-bars i:nth-child(1) { width: 20px; animation-delay: 0ms; }
+.logo-bars i:nth-child(2) { width: 14px; animation-delay: 400ms; }
+.logo-bars i:nth-child(3) { width: 10px; animation-delay: 800ms; }
 .logo-bars.lg i:nth-child(1) { width: 28px; }
 .logo-bars.lg i:nth-child(2) { width: 20px; }
 .logo-bars.lg i:nth-child(3) { width: 14px; }
+
+@keyframes logo-bar-fill {
+  0%, 55%, 100% { opacity: 0.35; }
+  25%            { opacity: 1; }
+}
 
 /* ─── Broadcast LED status ─── */
 .led {
@@ -425,8 +431,8 @@ html {
 
 /* ─── Button / interactive micro-interactions ─── */
 button, a {
-  transition-property: color, background-color, border-color, opacity, box-shadow, transform;
-  transition-duration: var(--d-instant);
+  transition-property: color, background-color, border-color, opacity, box-shadow;
+  transition-duration: 300ms;
   transition-timing-function: var(--ease-out);
 }
 input, select, textarea {
@@ -483,7 +489,8 @@ input:focus, select:focus, textarea:focus {
 /* ─── Reduced motion ─── */
 @media (prefers-reduced-motion: reduce) {
   .bars-loader i,
-  .led.transcribing::before { animation: none; }
+  .logo-bars i,
+  .led.transcribing::before { animation: none; opacity: 1; }
   .stagger-list > *,
   .reveal,
   .page-animate,

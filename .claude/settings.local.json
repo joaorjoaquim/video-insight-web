@@ -44,7 +44,9 @@
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\john\\\\Documents\\\\Projetos\\\\video-insight\\\\video-insight-api\" -Force)",
       "Bash(Select-Object Name, PSIsContainer)",
       "Bash(Format-Table -AutoSize)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(node -e \"const icons = require\\('@hugeicons/core-free-icons'\\); const keys = Object.keys\\(icons\\).filter\\(k => /star|fork|git|branch/i.test\\(k\\)\\); console.log\\(keys.join\\('\\\\n'\\)\\)\")",
+      "Bash(dir \"C:\\\\Users\\\\john\\\\Documents\\\\Projetos\\\\video-insight\\\\video-insight-web\\\\node_modules\\\\@hugeicons\\\\core-free-icons\" /b)"
     ]
   }
 }

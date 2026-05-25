@@ -9,6 +9,8 @@ import { getGithubLinkUrl } from "../../../lib/api/authApi";
 import { useT, useI18n } from "../../../lib/i18n";
 import { Reveal } from "../../../components/ui/reveal";
 import { CustomSelect } from "../../../components/ui/custom-select";
+import { StarIcon, GitForkIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 
 function getNextSundayLabel(locale: string): string {
   const now = new Date();
@@ -222,7 +224,7 @@ export default function WalletPage() {
               </div>
               <a
                 href="#earn-credits"
-                className="flex items-center gap-2 px-5 py-3 text-sm font-semibold bg-[var(--play)] hover:bg-[var(--play-700)] text-white rounded-[6px] transition-colors"
+                className="flex items-center gap-2 px-5 py-3 text-sm font-semibold bg-[var(--play)] hover:bg-[var(--play-700)] text-[var(--ink-1)] rounded-[6px] transition-colors"
               >
                 {t("wallet.balance.buyBtn")}
                 <span className="inline-block w-0 h-0 border-t-[5px] border-t-transparent border-b-[5px] border-b-transparent border-l-[8px] border-l-white" />
@@ -421,7 +423,7 @@ export default function WalletPage() {
                     type="button"
                     onClick={handleRedeemPromo}
                     disabled={!promoCode.trim() || redeemMutation.isPending}
-                    className="mt-auto px-4 py-2 text-sm font-semibold bg-[var(--play)] hover:bg-[var(--play-700)] disabled:opacity-40 text-white rounded-[6px] transition-colors"
+                    className="mt-auto px-4 py-2 text-sm font-semibold bg-[var(--play)] hover:bg-[var(--play-700)] disabled:opacity-50 disabled:cursor-not-allowed text-[var(--ink-1)] rounded-[6px] transition-colors"
                   >
                     {redeemMutation.isPending ? t("wallet.earn.promo.redeeming") : t("wallet.earn.promo.button")}
                   </button>
@@ -462,13 +464,16 @@ export default function WalletPage() {
                       <p className="br-eyebrow text-[var(--led-completed)]">@{user.githubUsername}</p>
                       {githubError && <p className="text-xs text-[var(--led-failed)]">{githubError}</p>}
                       {[
-                        { action: "star" as const, repo: "web" as const, label: t("wallet.earn.github.star"), claimed: user.githubStarClaimedWeb },
-                        { action: "fork" as const, repo: "web" as const, label: t("wallet.earn.github.fork"), claimed: user.githubForkClaimedWeb },
-                        { action: "star" as const, repo: "api" as const, label: t("wallet.earn.github.starApi"), claimed: user.githubStarClaimedApi },
-                        { action: "fork" as const, repo: "api" as const, label: t("wallet.earn.github.forkApi"), claimed: user.githubForkClaimedApi },
-                      ].map(({ action, repo, label, claimed }) => (
+                        { action: "star" as const, repo: "web" as const, label: t("wallet.earn.github.star"), claimed: user.githubStarClaimedWeb, icon: StarIcon },
+                        { action: "fork" as const, repo: "web" as const, label: t("wallet.earn.github.fork"), claimed: user.githubForkClaimedWeb, icon: GitForkIcon },
+                        { action: "star" as const, repo: "api" as const, label: t("wallet.earn.github.starApi"), claimed: user.githubStarClaimedApi, icon: StarIcon },
+                        { action: "fork" as const, repo: "api" as const, label: t("wallet.earn.github.forkApi"), claimed: user.githubForkClaimedApi, icon: GitForkIcon },
+                      ].map(({ action, repo, label, claimed, icon }) => (
                         <div key={`${action}-${repo}`} className="flex items-center justify-between gap-2">
-                          <span className="text-xs text-[var(--ink-2)]">{label}</span>
+                          <span className="flex items-center gap-1.5 text-xs text-[var(--ink-2)]">
+                            <HugeiconsIcon icon={icon} size={12} className="flex-shrink-0 text-[var(--ink-3)]" />
+                            {label}
+                          </span>
                           {claimed ? (
                             <span className="br-eyebrow text-[var(--led-completed)]">{t("wallet.earn.github.claimed")}</span>
                           ) : (
