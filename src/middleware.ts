@@ -59,14 +59,17 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // For protected routes, check authentication
+  // For protected routes, check session cookies.
+  // refresh_token is HttpOnly (set by API), sv_session is non-HttpOnly (set by frontend JS).
+  // Either is sufficient to let the request through — the client will verify the actual
+  // session via POST /auth/refresh on mount and redirect if invalid.
   if (isProtectedRoute) {
-    const token =
-      request.cookies.get("auth_token")?.value ||
-      request.headers.get("authorization")?.replace("Bearer ", "");
+    const hasSession =
+      request.cookies.get("refresh_token")?.value ||
+      request.cookies.get("sv_session")?.value ||
+      request.cookies.get("auth_token")?.value; // legacy fallback
 
-    if (!token) {
-      // Redirect to home page if not authenticated
+    if (!hasSession) {
       return NextResponse.redirect(new URL("/", request.url));
     }
   }

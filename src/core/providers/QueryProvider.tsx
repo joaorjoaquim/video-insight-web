@@ -20,7 +20,10 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
             },
           },
           mutations: {
-            retry: 1,
+            retry: (failureCount: number, error: any) => {
+              if (error?.response?.status >= 400 && error?.response?.status < 500) return false;
+              return failureCount < 1;
+            },
           },
         },
       })

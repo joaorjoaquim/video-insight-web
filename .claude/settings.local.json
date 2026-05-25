@@ -46,7 +46,25 @@
       "Bash(Format-Table -AutoSize)",
       "Bash(npm run *)",
       "Bash(node -e \"const icons = require\\('@hugeicons/core-free-icons'\\); const keys = Object.keys\\(icons\\).filter\\(k => /star|fork|git|branch/i.test\\(k\\)\\); console.log\\(keys.join\\('\\\\n'\\)\\)\")",
-      "Bash(dir \"C:\\\\Users\\\\john\\\\Documents\\\\Projetos\\\\video-insight\\\\video-insight-web\\\\node_modules\\\\@hugeicons\\\\core-free-icons\" /b)"
+      "Bash(dir \"C:\\\\Users\\\\john\\\\Documents\\\\Projetos\\\\video-insight\\\\video-insight-web\\\\node_modules\\\\@hugeicons\\\\core-free-icons\" /b)",
+      "Read(//c/Users/john/Documents/Projetos/video-insight/**)",
+      "Read(//c/Users/john/Documents/Projetos/video-insight/video-insight-api/**)",
+      "Bash(node -e \"require\\('@fastify/cookie'\\)\")",
+      "Bash(curl -s -c /tmp/cookies.txt -D /tmp/headers.txt -X POST http://localhost:5000/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"joaorjoaquim@gmail.com\",\"password\":\"123456\"}')",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl *)",
+      "Bash(lsof -ti:5000)",
+      "Bash(xargs kill -9)",
+      "Bash(netstat -ano)",
+      "Bash(taskkill //F //PID 30392)",
+      "Bash(taskkill //F //PID 23404)",
+      "Bash(awk '{print $2}')",
+      "Bash(python3 -c \"import sys,json; d=json.loads\\(sys.stdin.read\\(\\).replace\\('Body: ',''\\)\\); print\\('accessToken present:', 'accessToken' in d\\); print\\('user.email:', d.get\\('user',{}\\).get\\('email'\\)\\); print\\('token field \\(old\\):', 'token' in d\\)\")",
+      "Bash(awk '{print \"refresh_token=\", $NF}')",
+      "Bash(npx playwright *)",
+      "Bash(npm list *)",
+      "Bash(node pw-test.mjs)",
+      "Bash(taskkill *)"
     ]
   }
 }

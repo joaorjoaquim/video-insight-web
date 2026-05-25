@@ -12,7 +12,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../core/hooks";
-import { fetchProfile, logout } from "../../core/slices/authSlice";
+import { logoutUser } from "../../core/slices/authSlice";
 import { cn } from "../../lib/utils";
 import { useI18n, useT } from "../../lib/i18n";
 
@@ -42,14 +42,6 @@ export default function PrivateHeader() {
   }, []);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      dispatch(fetchProfile());
-      const interval = setInterval(() => dispatch(fetchProfile()), 5 * 60 * 1000);
-      return () => clearInterval(interval);
-    }
-  }, [dispatch, isAuthenticated]);
-
-  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setDropdownOpen(false);
@@ -72,7 +64,7 @@ export default function PrivateHeader() {
   };
 
   const handleLogout = () => {
-    dispatch(logout());
+    dispatch(logoutUser());
     router.push("/");
   };
 

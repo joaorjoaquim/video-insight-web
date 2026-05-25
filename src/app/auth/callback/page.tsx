@@ -3,6 +3,7 @@ import React, { useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAppDispatch } from '../../../core/hooks';
 import { setOAuthSession } from '../../../core/slices/authSlice';
+import { setAccessToken } from '../../../lib/api/axios';
 import * as authApi from '../../../lib/api/authApi';
 
 function AuthCallbackContent() {
@@ -12,31 +13,37 @@ function AuthCallbackContent() {
 
   useEffect(() => {
     const handleOAuthCallback = async () => {
-      const token = searchParams.get('token');
+      const accessToken = searchParams.get('access_token');
       const error = searchParams.get('error');
 
-      if (token) {
+      if (accessToken) {
         try {
-          // Store token in localStorage for client-side access
-          localStorage.setItem('auth_token', token);
-          
-          // Set token in cookie for server-side access
-          document.cookie = `auth_token=${token}; path=/; max-age=${15 * 24 * 60 * 60}; samesite=lax`;
-          
-          // Fetch user profile to get complete user data
+          setAccessToken(accessToken);
           const user = await authApi.getProfile();
-          
-          // Dispatch OAuth session action
-          dispatch(setOAuthSession({ user, token }));
-          
-          // Redirect to dashboard
+          dispatch(setOAuthSession({ user, accessToken }));
+
+          // If this was opened as a popup (GitHub link flow), notify opener and close
+          if (window.opener && !window.opener.closed) {
+            window.opener.postMessage({ type: 'github_linked', success: true }, window.location.origin);
+            window.close();
+            return;
+          }
+
           router.push('/dashboard');
-        } catch (error) {
-          console.error('Failed to fetch user profile:', error);
-          // If profile fetch fails, still redirect but user will need to refresh
+        } catch {
+          if (window.opener && !window.opener.closed) {
+            window.opener.postMessage({ type: 'github_linked', success: false }, window.location.origin);
+            window.close();
+            return;
+          }
           router.push('/dashboard');
         }
       } else if (error) {
+        if (window.opener && !window.opener.closed) {
+          window.opener.postMessage({ type: 'github_linked', success: false, error }, window.location.origin);
+          window.close();
+          return;
+        }
         router.push('/?error=oauth_failed');
       } else {
         router.push('/');
@@ -66,4 +73,4 @@ export default function AuthCallbackPage() {
       <AuthCallbackContent />
     </Suspense>
   );
-} 
+}

@@ -60,7 +60,7 @@ export interface CreditsResponse {
 
 export interface AuthResponse {
   user: User;
-  token: string;
+  accessToken: string;
 }
 
 // Signup
@@ -134,4 +134,13 @@ export const getReferralInfo = async (): Promise<ReferralInfo> => {
 export const getGithubLinkUrl = async (): Promise<string> => {
   const response = await api.get('/auth/link/github');
   return response.data.url;
+};
+
+export const refreshSession = async (): Promise<AuthResponse> => {
+  const response = await api.post('/auth/refresh');
+  return response.data;
+};
+
+export const logoutApi = async (): Promise<void> => {
+  await api.post('/auth/logout');
 };
