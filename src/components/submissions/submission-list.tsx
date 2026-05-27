@@ -17,6 +17,12 @@ const STATUS_KEYS: StatusOption[] = [
   { labelKey: "list.failed",      value: "failed" },
 ];
 
+function getThumbnailFromUrl(url?: string): string | undefined {
+  if (!url) return undefined;
+  const match = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([^&\n?#]+)/);
+  return match ? `https://img.youtube.com/vi/${match[1]}/maxresdefault.jpg` : undefined;
+}
+
 export function SubmissionList() {
   const t = useT();
   const [status, setStatus] = useState<SubmissionStatus | "all">("all");
@@ -85,7 +91,7 @@ export function SubmissionList() {
               id={video.id}
               title={video.title}
               status={video.status as SubmissionStatus}
-              thumbnail={video.thumbnail}
+              thumbnail={video.thumbnail || video.thumbnailUrl || getThumbnailFromUrl(video.videoUrl)}
               createdAt={formatSubmissionDate(video.createdAt)}
               progress={video.progress}
             />

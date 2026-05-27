@@ -84,7 +84,7 @@ export default function RootLayout({
 }>) {
   return (
     <ViewTransitions>
-      <html lang="en">
+      <html lang="en" data-scroll-behavior="smooth">
         <body className={`${instrumentSerif.variable} ${ibmPlexSans.variable} ${ibmPlexMono.variable}`}>
           <I18nProvider>
             <GlobalProvider>

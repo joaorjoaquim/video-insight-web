@@ -69,7 +69,11 @@ export default function DashboardPage() {
   const handleProcessVideo = async () => {
     if (!videoMetadata || submitVideoMutation.isPending) return;
     try {
-      await submitVideoMutation.mutateAsync({ videoUrl: videoMetadata.url });
+      await submitVideoMutation.mutateAsync({
+        videoUrl: videoMetadata.url,
+        thumbnail: videoMetadata.thumbnail,
+        title: videoMetadata.title,
+      });
       setVideoMetadata(null);
       setValue("url", "");
     } catch {}
@@ -114,21 +118,17 @@ export default function DashboardPage() {
                     disabled={isSubmitting || isLoadingMetadata}
                     className="flex-1 border border-[var(--rule)] rounded-[6px] px-3 py-2.5 text-sm bg-white dark:bg-zinc-900 text-[var(--ink-1)] placeholder:text-[var(--ink-3)] focus:outline-none focus:border-[var(--bars)] transition-colors"
                   />
-                  <button
-                    type="button"
-                    onClick={handleProcessVideo}
-                    disabled={videoMetadata === null || submitVideoMutation.isPending}
-                    className="flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 text-sm font-semibold bg-[var(--play)] hover:bg-[var(--play-700)] disabled:cursor-not-allowed text-white rounded-[6px] transition-colors whitespace-nowrap"
-                  >
-                    {submitVideoMutation.isPending ? (
-                      <span className="bars-loader scale-75 [&_i]:bg-white"><i/><i/><i/><i/></span>
-                    ) : (
-                      <>
-                        {t("dashboard.submit.button")}
-                        <span className="inline-block w-0 h-0 border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent border-l-[6px] border-l-white" />
-                      </>
-                    )}
-                  </button>
+                  {!videoMetadata && (
+                    <button
+                      type="button"
+                      onClick={handleProcessVideo}
+                      disabled={true}
+                      className="flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 text-sm font-semibold bg-[var(--play)] hover:bg-[var(--play-700)] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-[6px] transition-colors whitespace-nowrap"
+                    >
+                      {t("dashboard.submit.button")}
+                      <span className="inline-block w-0 h-0 border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent border-l-[6px] border-l-white" />
+                    </button>
+                  )}
                 </div>
                 {errors.url && <p className="text-[var(--led-failed)] text-xs mt-1.5">{t("validation.url")}</p>}
                 <p className="br-eyebrow mt-2">{t("dashboard.submit.hint")}</p>

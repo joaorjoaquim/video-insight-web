@@ -69,11 +69,11 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Refresh endpoint itself returned 401 → token definitively invalid.
-    // Just reject — let the refreshSession thunk's catch block clear Redux state.
-    // Do NOT navigate here: on initial mount, a 401 means "no session", and the
-    // app should render unauthenticated in place rather than triggering a redirect loop.
-    if (original.url?.includes(REFRESH_ENDPOINT)) {
+    // Auth endpoints (login, signup, refresh) returning 401 means credential/token failure —
+    // not an expired access token. Skip the refresh-retry entirely to prevent the interceptor
+    // from calling /auth/refresh and then triggering a logout on bad-password errors.
+    const AUTH_SKIP_URLS = [REFRESH_ENDPOINT, '/auth/login', '/auth/signup'];
+    if (AUTH_SKIP_URLS.some(u => original.url?.includes(u))) {
       return Promise.reject(error);
     }
 

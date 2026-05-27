@@ -6,17 +6,21 @@ import {
 } from "./videoInsightApi";
 import { getCredits } from "./authApi";
 
+type SubmitVideoVariables = SubmitVideoRequest & {
+  thumbnail?: string;
+  title?: string;
+};
+
 // Hook for submitting a new video
 export const useSubmitVideo = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: SubmitVideoRequest) => videoInsightApi.submitVideo(data),
-    onSuccess: (data) => {
-      // Invalidate and refetch videos list
+    mutationFn: (data: SubmitVideoVariables) =>
+      videoInsightApi.submitVideo({ videoUrl: data.videoUrl }),
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.videos });
 
-      // Optimistically add the new video to the cache
       queryClient.setQueryData(queryKeys.videos, (old: any) => {
         if (!old) return old;
         return {
@@ -24,8 +28,10 @@ export const useSubmitVideo = () => {
           videos: [
             {
               id: data.id,
-              title: data.message || "Processing...",
+              title: variables.title || "Processing...",
               status: data.status,
+              thumbnail: variables.thumbnail,
+              videoUrl: variables.videoUrl,
               createdAt: new Date().toISOString(),
               duration: "",
               platform: "unknown",

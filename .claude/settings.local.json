@@ -65,7 +65,11 @@
       "Bash(npm list *)",
       "Bash(node pw-test.mjs)",
       "Bash(taskkill *)",
-      "Bash(grep -v \"//.*isPending\")"
+      "Bash(grep -v \"//.*isPending\")",
+      "mcp__chrome-devtools__list_pages",
+      "Bash(powershell.exe -Command \"Get-ChildItem 'C:\\\\Users\\\\john\\\\Documents\\\\Projetos\\\\video-insight\\\\video-insight-api' | Select-Object Name\")",
+      "Bash(powershell.exe *)",
+      "mcp__chrome-devtools__wait_for"
     ]
   }
 }

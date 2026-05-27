@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppSelector, useAppDispatch } from '../core/hooks';
 import { openAuthDialog } from '../core/slices/dialogSlice';
@@ -10,23 +10,12 @@ import { ScrollToTop } from '../components/ui/scroll-to-top';
 export default function RootPage() {
   const router = useRouter();
   const { isAuthenticated } = useAppSelector((state: any) => state.auth);
-  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
       router.replace('/dashboard');
-    } else {
-      setReady(true);
     }
   }, [isAuthenticated, router]);
-
-  if (!ready) {
-    return (
-      <div className="min-h-screen bg-[var(--briefing-bg)] flex items-center justify-center">
-        <div className="bars-loader"><i/><i/><i/><i/></div>
-      </div>
-    );
-  }
 
   return <LandingPage />;
 }

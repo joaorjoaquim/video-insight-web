@@ -179,7 +179,7 @@
   height: 2.5px;
   border-radius: 1px;
   background: var(--bars);
-  animation: logo-bar-fill 2.4s var(--ease-mechanical) infinite;
+  animation: logo-bar-fill 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 .logo-bars i:nth-child(1) { width: 20px; animation-delay: 0ms; }
 .logo-bars i:nth-child(2) { width: 14px; animation-delay: 400ms; }
@@ -240,7 +240,7 @@
   border-radius: 1.5px;
   background: var(--bars);
   transform-origin: left;
-  animation: bar-stagger 1.2s var(--ease-out) infinite;
+  animation: bar-stagger 1.2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
 }
 .bars-loader i:nth-child(1) { width: 100%; animation-delay: 0ms; }
 .bars-loader i:nth-child(2) { width: 75%;  animation-delay: 80ms; }
@@ -484,14 +484,13 @@ input:focus, select:focus, textarea:focus {
 
 /* ─── Reduced motion ─── */
 @media (prefers-reduced-motion: reduce) {
-  html, body { scroll-behavior: auto; }
-  .bars-loader i,
-  .logo-bars i,
-  .led.transcribing::before { animation: none; opacity: 1; }
+  /* Heavy page-motion animations off — can cause vestibular issues */
   .stagger-list > *,
   .reveal,
   .page-animate,
   [role="tabpanel"],
   ::view-transition-old(root),
   ::view-transition-new(root) { animation: none; transition: none; opacity: 1; transform: none; }
+  /* LED pulse off — repetitive flash */
+  .led.transcribing::before { animation: none; }
 }

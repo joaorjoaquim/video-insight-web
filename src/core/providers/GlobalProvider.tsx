@@ -50,7 +50,9 @@ function AuthInitializer({ children }: { children: ReactNode }) {
     }
   }, [isSessionLoading, isAuthenticated, pathname, router]);
 
-  if (isSessionLoading) {
+  // Only hard-block rendering on protected routes — public pages render immediately
+  // while the session check runs in the background.
+  if (isSessionLoading && isProtectedPath(pathname)) {
     return (
       <div className="min-h-screen bg-[var(--briefing-bg)] flex items-center justify-center">
         <div className="bars-loader"><i /><i /><i /><i /></div>
