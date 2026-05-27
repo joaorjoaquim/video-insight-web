@@ -1,13 +1,14 @@
 "use client";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import InsightsList from "../../../../components/insights/insights-list";
 import MindMap from "../../../../components/insights/mind-map";
 import PrivateHeader from "../../../../components/layout/private-header";
 import SummaryMetrics from "../../../../components/submissions/summary-metrics";
 import TranscriptView from "../../../../components/submissions/transcript-view";
 import ActionButtons from "../../../../components/ui/action-buttons";
+import { VideoPlayer, type VideoPlayerHandle } from "../../../../components/ui/video-player";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../../components/ui/tabs";
 import { useVideo } from "../../../../lib/api/hooks";
 import { formatSubmissionDate } from "../../../../lib/utils/date-formatter";
@@ -46,6 +47,7 @@ export default function SubmissionDetailPage() {
 
   const { data: video, isLoading, error } = useVideo(videoId);
   const isVideoCompleted = video?.status === "completed";
+  const playerRef = useRef<VideoPlayerHandle>(null);
 
   if (isLoading) {
     return (
@@ -178,6 +180,13 @@ export default function SubmissionDetailPage() {
           </section>
         </Reveal>
 
+        {/* Video player — always visible below the title block */}
+        {video?.videoUrl && (
+          <div className="mb-10">
+            <VideoPlayer ref={playerRef} url={video.videoUrl} />
+          </div>
+        )}
+
         {/* Tabs */}
         <Tabs value={tab} onValueChange={setTab} className="w-full">
           <TabsList className="mb-8 border-b border-[var(--rule)] rounded-none bg-transparent h-auto p-0 gap-0">
@@ -238,8 +247,10 @@ export default function SubmissionDetailPage() {
 
           {/* Transcript */}
           <TabsContent value="transcript">
-            <div className="flex justify-between items-center mb-6">
-              <span className="br-eyebrow">{t("detail.transcript.label")} · {transformedData.transcript?.length || 0} {t("detail.transcript.segments")}</span>
+            <div className="flex justify-between items-center mb-5">
+              <span className="br-eyebrow">
+                {t("detail.transcript.label")} · {transformedData.transcript?.length || 0} {t("detail.transcript.segments")}
+              </span>
               <ActionButtons
                 showDownload={false}
                 showShare={false}
@@ -247,8 +258,11 @@ export default function SubmissionDetailPage() {
                 onCopy={() => copyToClipboard("transcript", transformedData, transformedData.title || "Untitled")}
               />
             </div>
-            <div className="max-w-2xl">
-              <TranscriptView transcript={transformedData.transcript || []} />
+            <div className="max-h-[70vh] overflow-y-auto rounded-[6px] border border-[var(--rule)] p-5">
+              <TranscriptView
+                transcript={transformedData.transcript || []}
+                onSeek={(s) => playerRef.current?.seekTo(s)}
+              />
             </div>
           </TabsContent>
 

@@ -83,7 +83,7 @@ export function middleware(request: NextRequest) {
   response.headers.set("Referrer-Policy", "origin-when-cross-origin");
   response.headers.set(
     "Content-Security-Policy",
-    "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: https://img.youtube.com https://www.youtube.com; font-src 'self' data:; connect-src 'self' https: http://localhost:5000 https://api.summaryvideos.com https://www.youtube.com; frame-src 'self' https://www.youtube.com;"
+    "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.youtube.com https://s.ytimg.com https://player.vimeo.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: https://img.youtube.com https://www.youtube.com https://i.vimeocdn.com; font-src 'self' data:; connect-src 'self' https: http://localhost:5000 https://api.summaryvideos.com https://www.youtube.com https://player.vimeo.com; frame-src 'self' https://www.youtube.com https://player.vimeo.com;"
   );
 
   return response;

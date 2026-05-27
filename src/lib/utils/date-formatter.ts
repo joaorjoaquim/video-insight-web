@@ -11,7 +11,7 @@ export function formatSubmissionDate(isoDateString: string): string {
       return '';
     }
     
-    return `Submitted on ${date.format('MMM D, YYYY')}`;
+    return date.format('MMM D, YYYY');
   } catch (error) {
     console.error('Error formatting date:', error);
     return '';

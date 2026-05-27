@@ -69,7 +69,13 @@
       "mcp__chrome-devtools__list_pages",
       "Bash(powershell.exe -Command \"Get-ChildItem 'C:\\\\Users\\\\john\\\\Documents\\\\Projetos\\\\video-insight\\\\video-insight-api' | Select-Object Name\")",
       "Bash(powershell.exe *)",
-      "mcp__chrome-devtools__wait_for"
+      "mcp__chrome-devtools__wait_for",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({**d.get\\('dependencies',{}\\), **d.get\\('devDependencies',{}\\)}, indent=2\\)\\)\")",
+      "Bash(node -e \"const {YoutubeTranscript} = require\\('youtube-transcript'\\); console.log\\(Object.keys\\(YoutubeTranscript\\)\\)\")",
+      "Bash(node -e \"const m = require\\('./node_modules/youtube-transcript/dist/index.js'\\); const keys = Object.keys\\(m\\); console.log\\(keys\\);\")",
+      "Bash(powershell *)",
+      "Bash(Select-Object -First 30)",
+      "mcp__chrome-devtools__resize_page"
     ]
   }
 }
