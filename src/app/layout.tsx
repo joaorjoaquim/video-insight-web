@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     template: "%s | SummaryVideos",
   },
   description:
-    "Turn any YouTube, Vimeo, or Twitter video into a structured AI summary, timestamped transcript, key insights, and mind map in minutes. Free to try.",
+    "Turn a YouTube video into an AI summary, transcript, key points and mind map. Free, no credit card.",
   keywords: [
     "ai video summarizer",
     "youtube summary",
@@ -46,9 +46,9 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://summaryvideos.com"),
   alternates: { canonical: "/" },
   openGraph: {
-    title: "SummaryVideos — Turn any video into a brief",
+    title: "SummaryVideos — Turn a YouTube video into a brief",
     description:
-      "Paste a public video URL and get a summary, searchable transcript, insights, and mind map in minutes.",
+      "Paste a public YouTube link and get a summary, transcript, key points and mind map.",
     url: "https://summaryvideos.com",
     siteName: "SummaryVideos",
     locale: "en_US",
@@ -66,7 +66,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "SummaryVideos — AI Video Summarizer",
     description:
-      "Turn any YouTube, Vimeo, or Twitter video into a structured brief in minutes.",
+      "Turn a YouTube video into a brief: summary, transcript, key points and mind map.",
     images: ["/og-image.png"],
   },
   robots: {

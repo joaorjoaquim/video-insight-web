@@ -7,17 +7,13 @@ export function JsonLd() {
     operatingSystem: "Web",
     url: "https://summaryvideos.com",
     description:
-      "AI-powered video summarizer that turns YouTube, Vimeo, and Twitter videos into structured summaries, timestamped transcripts, and key insights.",
+      "Web app that turns a public YouTube video into an AI-written summary, transcript, key points and mind map.",
     offers: {
       "@type": "Offer",
       price: "0",
       priceCurrency: "USD",
-      description: "100 free credits on signup. Pay-per-use after that.",
-    },
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "4.8",
-      ratingCount: "124",
+      description:
+        "100 free credits on signup. Each video uses 5. A balance below 100 is restored to 100 every week. No paid plans.",
     },
   };
 
