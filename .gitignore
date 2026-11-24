@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local-only: workstation and tooling files, never in a public repo
+.claude/settings.local.json
+.playwright-mcp/
+/local/
+*.log
