@@ -183,7 +183,7 @@ export default function SubmissionDetailPage() {
         {/* Video player — always visible below the title block */}
         {video?.videoUrl && (
           <div className="mb-10">
-            <VideoPlayer ref={playerRef} url={video.videoUrl} />
+            <VideoPlayer key={video.id} ref={playerRef} url={video.videoUrl} title={video.title} />
           </div>
         )}
 

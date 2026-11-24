@@ -49,6 +49,7 @@ export default function VideoPreview({
             <img
               src={metadata.thumbnail}
               alt={metadata.title}
+              referrerPolicy="no-referrer"
               className="w-full h-full object-cover"
               onError={(e) => { (e.target as HTMLImageElement).src = "/summary_videos_logo.png"; }}
             />

@@ -259,6 +259,14 @@ export const en = {
   'detail.copySummary': 'Copy Summary',
   'detail.copyTranscript': 'Copy Transcript',
   'detail.copyInsights': 'Copy Insights',
+
+  'nav.account': 'Account',
+  'player.play': 'Play video',
+  'player.loading': 'Loading the player…',
+  'player.error': 'The player did not load.',
+  'player.retry': 'Try again',
+  'player.openYoutube': 'Open on YouTube',
+  'player.openVideo': 'Open video',
 };
 
 export type TranslationKey = keyof typeof en;

@@ -15,6 +15,7 @@ import { useAppDispatch, useAppSelector } from "../../core/hooks";
 import { logoutUser } from "../../core/slices/authSlice";
 import { cn } from "../../lib/utils";
 import { useI18n, useT } from "../../lib/i18n";
+import { UserAvatar } from "../ui/user-avatar";
 
 export default function PrivateHeader() {
   const [theme, setTheme] = useState("light");
@@ -66,11 +67,6 @@ export default function PrivateHeader() {
   const handleLogout = () => {
     dispatch(logoutUser());
     router.push("/");
-  };
-
-  const getAvatarUrl = () => {
-    if (user?.avatarUrl) return user.avatarUrl;
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || user?.email || "User")}&background=7E1DFD&color=fff&size=128`;
   };
 
   const navLinkClass = (path: string) =>
@@ -137,12 +133,9 @@ export default function PrivateHeader() {
             <button
               className="flex items-center gap-2 hover:opacity-80 transition-opacity"
               onClick={() => setDropdownOpen(!dropdownOpen)}
+              aria-label={t("nav.account")}
             >
-              <img
-                src={getAvatarUrl()}
-                alt={user?.name || user?.email || "User"}
-                className="w-7 h-7 rounded-full border border-[var(--bars)]"
-              />
+              <UserAvatar name={user?.name} email={user?.email} src={user?.avatarUrl} size={28} />
             </button>
 
             {dropdownOpen && (
@@ -219,7 +212,7 @@ export default function PrivateHeader() {
             </a>
 
             <div className="flex items-center gap-3 mt-auto pt-4 border-t border-[var(--rule)]">
-              <img src={getAvatarUrl()} alt={user?.name || "User"} className="w-8 h-8 rounded-full border border-[var(--bars)]" />
+              <UserAvatar name={user?.name} email={user?.email} src={user?.avatarUrl} size={32} />
               <div className="min-w-0 flex-1">
                 <div className="text-[var(--ink-1)] dark:text-zinc-100 text-sm font-medium truncate">{user?.name || "User"}</div>
                 <div className="br-eyebrow truncate">{user?.email}</div>

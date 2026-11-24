@@ -4,6 +4,7 @@ import { useVideos } from "../../lib/api/hooks";
 import { formatSubmissionDate } from "../../lib/utils/date-formatter";
 import { useT } from "../../lib/i18n";
 import { CustomSelect } from "../ui/custom-select";
+import { youtubeThumbnail } from "../../lib/utils/video-metadata";
 import type { TranslationKey } from "../../lib/i18n/locales/en";
 
 type StatusOption = { labelKey: TranslationKey; value: SubmissionStatus | "all" };
@@ -20,7 +21,7 @@ const STATUS_KEYS: StatusOption[] = [
 function getThumbnailFromUrl(url?: string): string | undefined {
   if (!url) return undefined;
   const match = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([^&\n?#]+)/);
-  return match ? `https://img.youtube.com/vi/${match[1]}/maxresdefault.jpg` : undefined;
+  return match ? youtubeThumbnail(match[1]) : undefined;
 }
 
 export function SubmissionList() {

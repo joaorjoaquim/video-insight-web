@@ -259,4 +259,12 @@ export const ptBr = {
   'detail.copySummary': 'Copiar Resumo',
   'detail.copyTranscript': 'Copiar Transcrição',
   'detail.copyInsights': 'Copiar Insights',
+
+  'nav.account': 'Conta',
+  'player.play': 'Reproduzir vídeo',
+  'player.loading': 'Carregando o player…',
+  'player.error': 'O player não carregou.',
+  'player.retry': 'Tentar de novo',
+  'player.openYoutube': 'Abrir no YouTube',
+  'player.openVideo': 'Abrir vídeo',
 };

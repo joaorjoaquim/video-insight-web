@@ -12,6 +12,11 @@ export interface VideoMetadata {
 }
 
 // --- YouTube ---
+// i.ytimg.com sets no cookie, and hqdefault exists for every video (maxresdefault does not).
+export function youtubeThumbnail(videoId: string): string {
+  return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+}
+
 function extractYouTubeId(url: string): string | null {
   const patterns = [
     /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
@@ -37,7 +42,7 @@ async function getYouTubeMetadata(url: string): Promise<VideoMetadata | null> {
     platform: "youtube",
     url,
     title: data.title,
-    thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+    thumbnail: youtubeThumbnail(videoId),
     channel: data.author_name,
   };
 }

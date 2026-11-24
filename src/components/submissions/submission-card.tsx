@@ -49,7 +49,7 @@ export function SubmissionCard({ id, title, status, thumbnail, createdAt, progre
         {/* Thumbnail */}
         {thumbnail && (
           <div className="aspect-video bg-zinc-100 dark:bg-zinc-800 rounded-[6px] mb-3 overflow-hidden">
-            <img src={thumbnail} alt={title} className="object-cover w-full h-full" />
+            <img src={thumbnail} alt={title} referrerPolicy="no-referrer" className="object-cover w-full h-full" />
           </div>
         )}
 
