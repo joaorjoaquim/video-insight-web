@@ -56,7 +56,8 @@ export function SubmissionCard({ id, title, status, thumbnail, createdAt, progre
         {/* Title */}
         <div
           style={{ fontFamily: "var(--font-display-br, Georgia, serif)", fontSize: "1.15rem", lineHeight: 1.2, letterSpacing: "-0.01em" }}
-          className="text-[var(--ink-1)] mb-3 flex-1"
+          className="text-[var(--ink-1)] mb-3 flex-1 min-w-0 line-clamp-3 [overflow-wrap:anywhere]"
+          title={title}
         >
           {title}
         </div>
@@ -77,7 +78,7 @@ export function SubmissionCard({ id, title, status, thumbnail, createdAt, progre
             <span className={`led ${currentStatus}`}>{currentStatus}</span>
             {isCompleted && (
               <Link href={`/submissions/${id}`}>
-                <button className="br-eyebrow border border-[var(--ink-1)] dark:border-zinc-600 px-3 py-1.5 rounded-[4px] hover:bg-[var(--ink-1)] hover:text-[var(--briefing-bg)] transition-colors">
+                <button className="br-eyebrow border border-[var(--ink-1)] dark:border-[var(--rule-strong)] px-3 py-1.5 rounded-[4px] hover:bg-[var(--ink-1)] hover:text-[var(--briefing-bg)]! transition-colors">
                   {t("card.view")}
                 </button>
               </Link>

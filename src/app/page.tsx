@@ -48,13 +48,13 @@ function LandingPage() {
             </a>
             <button
               onClick={() => setLocale(locale === 'en' ? 'pt-br' : 'en')}
-              className="hidden sm:block font-[var(--font-mono-br,monospace)] text-[11px] font-medium tracking-[0.12em] uppercase text-[var(--ink-2)] hover:text-[var(--play)] border border-[var(--rule)] rounded px-1.5 py-0.5 transition-colors"
+              className="hidden sm:block font-[var(--font-mono-br,monospace)] text-[11px] font-medium tracking-[0.12em] uppercase text-[var(--ink-2)] hover:text-[var(--play-text)] border border-[var(--rule)] rounded px-1.5 py-0.5 transition-colors"
             >
               {t('lang.current')}
             </button>
             <button
               onClick={open}
-              className="border border-[var(--ink-1)] text-[var(--ink-1)] px-4 py-1.5 text-[11px] font-medium tracking-[0.1em] uppercase hover:bg-[var(--ink-1)] hover:text-[var(--briefing-bg)] transition-colors rounded-[4px]"
+              className="border border-[var(--ink-1)] dark:border-[var(--rule-strong)] text-[var(--ink-1)] px-4 py-1.5 text-[11px] font-medium tracking-[0.1em] uppercase hover:bg-[var(--ink-1)] hover:text-[var(--briefing-bg)] transition-colors rounded-[4px]"
               style={{ fontFamily: 'var(--font-mono-br, monospace)' }}
             >
               {t('nav.signIn')}
@@ -80,7 +80,7 @@ function LandingPage() {
                 className="text-[var(--ink-1)] mb-7 max-w-[18ch]"
               >
                 {t('landing.hero.headline')}{' '}
-                <span className="ital-bar">{t('landing.hero.headlineAccent')}</span>{' '}
+                <span className="ital-bar mr-[0.08em]">{t('landing.hero.headlineAccent')}</span>{' '}
                 {t('landing.hero.headlineSuffix')}
               </h1>
               <p className="text-[var(--ink-2)] text-lg leading-relaxed mb-8 max-w-[40rem]">
@@ -89,10 +89,10 @@ function LandingPage() {
               <div className="flex gap-3 items-center flex-wrap">
                 <button
                   onClick={open}
-                  className="flex items-center gap-2 px-5 py-3 text-sm font-semibold rounded-[6px] bg-[var(--play)] text-white hover:bg-[var(--play-700)] transition-colors"
+                  className="flex items-center gap-2 px-5 py-3 text-sm font-semibold rounded-[6px] bg-[var(--play)] border border-transparent text-[var(--on-play)] hover:bg-[var(--play-hover)] transition-colors"
                 >
                   {t('landing.hero.cta')}
-                  <span className="inline-block w-0 h-0 border-t-[5px] border-t-transparent border-b-[5px] border-b-transparent border-l-[8px] border-l-white ml-1" />
+                  <span className="inline-block w-0 h-0 border-t-[5px] border-t-transparent border-b-[5px] border-b-transparent border-l-[8px] border-l-[var(--on-play)] ml-1" />
                 </button>
                 <a href="#how-it-works" className="text-[var(--ink-2)] text-sm hover:text-[var(--ink-1)] transition-colors">
                   {t('landing.hero.ctaSecondary')}
@@ -127,7 +127,7 @@ function LandingPage() {
             <div className="border-t border-[var(--rule)]">
               {FEATURES.map((f, i) => (
                 <div key={f.title} className="grid grid-cols-1 md:grid-cols-[80px_1fr] gap-6 py-8 border-b border-[var(--rule)]">
-                  <div className="br-eyebrow text-[var(--play-700)]">0{i + 1}</div>
+                  <div className="br-eyebrow text-[var(--play-text)]">0{i + 1}</div>
                   <div>
                     <div className="br-eyebrow mb-2">{t(f.kicker)}</div>
                     <div style={{ fontFamily: 'var(--font-display-br, Georgia, serif)', fontSize: '1.4rem', letterSpacing: '-0.01em' }} className="text-[var(--ink-1)] mb-3">{t(f.title)}</div>
@@ -181,7 +181,7 @@ function LandingPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
               {STEPS.map((s, i) => (
                 <div key={s.title}>
-                  <div className="br-eyebrow text-[var(--play-700)] mb-4">0{i + 1}</div>
+                  <div className="br-eyebrow text-[var(--play-text)] mb-4">0{i + 1}</div>
                   <div style={{ fontFamily: 'var(--font-display-br, Georgia, serif)', fontSize: '1.3rem', letterSpacing: '-0.01em' }} className="text-[var(--ink-1)] mb-2">{t(s.title)}</div>
                   <p className="text-[var(--ink-2)] text-sm leading-relaxed">{t(s.body)}</p>
                 </div>
@@ -206,10 +206,10 @@ function LandingPage() {
               </h2>
               <button
                 onClick={open}
-                className="flex items-center gap-2 px-5 py-3 text-sm font-semibold rounded-[6px] bg-[var(--play)] text-white hover:bg-[var(--play-700)] transition-colors"
+                className="flex items-center gap-2 px-5 py-3 text-sm font-semibold rounded-[6px] bg-[var(--play)] border border-transparent text-[var(--on-play)] hover:bg-[var(--play-hover)] transition-colors"
               >
                 {t('landing.cta.button')}
-                <span className="inline-block w-0 h-0 border-t-[5px] border-t-transparent border-b-[5px] border-b-transparent border-l-[8px] border-l-white ml-1" />
+                <span className="inline-block w-0 h-0 border-t-[5px] border-t-transparent border-b-[5px] border-b-transparent border-l-[8px] border-l-[var(--on-play)] ml-1" />
               </button>
             </div>
           </div>

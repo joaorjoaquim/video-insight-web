@@ -46,7 +46,7 @@ export function UserAvatar({ name, email, src, size }: UserAvatarProps) {
       aria-hidden="true"
       className={cn(
         box,
-        "inline-flex items-center justify-center bg-[var(--ink-1)] text-[var(--briefing-bg)] font-[family-name:var(--font-mono-br)] font-medium leading-none",
+        "inline-flex items-center justify-center bg-[var(--ink-1)] text-[var(--briefing-bg)] dark:bg-[var(--rule-soft)] dark:text-[var(--ink-1)] dark:border dark:border-[var(--rule-strong)] font-[family-name:var(--font-mono-br)] font-medium leading-none",
         size === 28 ? "text-[10px]" : "text-[11px]"
       )}
     >

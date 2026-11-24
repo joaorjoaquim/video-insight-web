@@ -94,7 +94,7 @@ export default function SubmissionDetailPage() {
               {t("detail.processing.sub")}
             </p>
             <Link href="/dashboard">
-              <button className="br-eyebrow border border-[var(--ink-1)] px-4 py-2 rounded-[4px] hover:bg-[var(--ink-1)] hover:text-[var(--briefing-bg)] transition-colors">
+              <button className="br-eyebrow border border-[var(--ink-1)] dark:border-[var(--rule-strong)] px-4 py-2 rounded-[4px] hover:bg-[var(--ink-1)] hover:text-[var(--briefing-bg)]! transition-colors">
                 {t("detail.processing.back")}
               </button>
             </Link>
@@ -153,20 +153,20 @@ export default function SubmissionDetailPage() {
             </div>
             <h1
               style={{ fontFamily: "var(--font-display-br, Georgia, serif)", fontSize: "clamp(2rem, 4.5vw + 1rem, 4rem)", lineHeight: 1.05, letterSpacing: "-0.02em" }}
-              className="text-[var(--ink-1)] max-w-[22ch] mb-6"
+              className="text-[var(--ink-1)] max-w-[22ch] mb-6 [overflow-wrap:anywhere]"
             >
               {titleLead}{titleLead && " "}<span className="ital-bar">{titleTail}</span>
             </h1>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-5">
               <span className="br-eyebrow">{transformedData.platform || "YouTube"}</span>
-              <span className="text-[var(--rule)]">·</span>
+              <span aria-hidden="true" className="text-[var(--rule)]">·</span>
               <span className="br-eyebrow">{t("detail.runtime")} {durationDisplay}</span>
-              <span className="text-[var(--rule)]">·</span>
+              <span aria-hidden="true" className="text-[var(--rule)]">·</span>
               <span className="br-eyebrow">
                 {t("detail.submitted")}{" "}
                 {transformedData.createdAt ? formatSubmissionDate(transformedData.createdAt) : "—"}
               </span>
-              <span className="text-[var(--rule)]">·</span>
+              <span aria-hidden="true" className="text-[var(--rule)]">·</span>
               <span className="led completed">completed</span>
             </div>
             <ActionButtons
@@ -274,7 +274,7 @@ export default function SubmissionDetailPage() {
                   <button
                     key={v}
                     onClick={() => setInsightView(v)}
-                    className="px-4 py-2 text-[10px] font-medium tracking-[0.12em] uppercase transition-colors"
+                    className={`px-4 py-2 text-[10px] font-medium tracking-[0.12em] uppercase transition-colors focus-visible:-outline-offset-2 ${insightView === v ? "focus-visible:outline-[var(--briefing-bg)]" : ""}`}
                     style={{
                       fontFamily: "var(--font-mono-br, monospace)",
                       background: insightView === v ? "var(--ink-1)" : "transparent",

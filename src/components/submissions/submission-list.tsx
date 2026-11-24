@@ -71,7 +71,7 @@ export function SubmissionList() {
           placeholder={t("list.search")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 border border-[var(--rule)] rounded-[6px] px-3 py-2 text-sm bg-white dark:bg-zinc-900 text-[var(--ink-1)] placeholder:text-[var(--ink-3)] focus:outline-none focus:border-[var(--bars)] transition-colors"
+          className="flex-1 border border-[var(--rule-strong)] rounded-[6px] px-3 py-2 text-sm bg-white dark:bg-zinc-900 text-[var(--ink-1)] placeholder:text-[var(--ink-3)] transition-colors"
         />
         <span className="br-eyebrow self-center ml-1">
           {filtered.length} of {videosData?.videos?.length ?? 0}

@@ -22,7 +22,7 @@ export default function TranscriptView({ transcript, onSeek }: TranscriptViewPro
             <button
               type="button"
               onClick={() => onSeek(timeToSeconds(block.time))}
-              className="shrink-0 text-xs font-mono text-[var(--play)] min-w-[52px] hover:underline focus:outline-none focus-visible:ring-1 focus-visible:ring-[var(--play)] rounded transition-colors"
+              className="shrink-0 text-xs font-mono text-[var(--play-text)] min-w-[52px] hover:underline rounded transition-colors"
             >
               {block.time}
             </button>

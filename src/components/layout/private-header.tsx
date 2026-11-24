@@ -73,7 +73,7 @@ export default function PrivateHeader() {
     cn(
       "font-[var(--font-mono-br,monospace)] text-[11px] font-medium tracking-[0.12em] uppercase transition-colors",
       pathname === path
-        ? "text-[var(--play)] border-b-2 border-[var(--play)] pb-[2px]"
+        ? "text-[var(--play-text)] border-b-2 border-[var(--play)] pb-[2px]"
         : "text-[var(--ink-2)] hover:text-[var(--ink-1)] dark:text-zinc-400 dark:hover:text-zinc-100"
     );
 
@@ -113,7 +113,7 @@ export default function PrivateHeader() {
           {/* Language toggle */}
           <button
             onClick={() => setLocale(locale === "en" ? "pt-br" : "en")}
-            className="font-[var(--font-mono-br,monospace)] text-[11px] font-medium tracking-[0.12em] uppercase text-[var(--ink-2)] hover:text-[var(--play)] dark:text-zinc-400 dark:hover:text-[var(--play)] transition-colors border border-[var(--rule)] rounded px-1.5 py-0.5"
+            className="font-[var(--font-mono-br,monospace)] text-[11px] font-medium tracking-[0.12em] uppercase text-[var(--ink-2)] hover:text-[var(--play-text)] dark:text-zinc-400 dark:hover:text-[var(--play-text)] transition-colors border border-[var(--rule)] rounded px-1.5 py-0.5"
             aria-label={t("lang.current")}
           >
             {t("lang.current")}
@@ -221,7 +221,7 @@ export default function PrivateHeader() {
             <div className="flex gap-3 items-center">
               <button
                 onClick={() => setLocale(locale === "en" ? "pt-br" : "en")}
-                className="font-[var(--font-mono-br,monospace)] text-[11px] font-medium tracking-[0.12em] uppercase text-[var(--ink-2)] hover:text-[var(--play)] border border-[var(--rule)] rounded px-1.5 py-0.5 transition-colors"
+                className="font-[var(--font-mono-br,monospace)] text-[11px] font-medium tracking-[0.12em] uppercase text-[var(--ink-2)] hover:text-[var(--play-text)] border border-[var(--rule)] rounded px-1.5 py-0.5 transition-colors"
               >
                 {t("lang.toggle")}
               </button>

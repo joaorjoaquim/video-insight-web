@@ -44,7 +44,7 @@ export function CustomSelect({ options, value, onChange, className }: CustomSele
         onClick={() => setOpen((o) => !o)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="flex items-center justify-between gap-3 border border-[var(--rule)] rounded-[6px] px-3 py-2 min-w-[170px] text-[11px] font-medium tracking-[0.1em] bg-white dark:bg-zinc-900 text-[var(--ink-2)] focus:outline-none focus:border-[var(--bars)] transition-colors"
+        className="flex items-center justify-between gap-3 border border-[var(--rule-strong)] rounded-[6px] px-3 py-2 min-w-[170px] text-[11px] font-medium tracking-[0.1em] bg-white dark:bg-zinc-900 text-[var(--ink-2)] transition-colors"
         style={{ fontFamily: "var(--font-mono-br, monospace)" }}
       >
         <span>{selected?.label ?? ""}</span>
@@ -72,7 +72,7 @@ export function CustomSelect({ options, value, onChange, className }: CustomSele
                   type="button"
                   onClick={() => { onChange(opt.value); close(); }}
                   className={cn(
-                    "w-full text-left px-3 py-1.5 text-[11px] font-medium tracking-[0.1em] transition-colors",
+                    "w-full text-left px-3 py-1.5 text-[11px] font-medium tracking-[0.1em] transition-colors focus-visible:-outline-offset-2",
                     isSelected
                       ? "bg-[var(--bars)] text-white"
                       : "text-[var(--ink-2)] hover:bg-[var(--rule-soft)] hover:text-[var(--ink-1)]"

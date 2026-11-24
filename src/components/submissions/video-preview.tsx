@@ -63,7 +63,7 @@ export default function VideoPreview({
         {/* Info */}
         <div className="flex-1 min-w-0">
           <p
-            className="text-[var(--ink-1)] text-sm font-medium leading-snug line-clamp-2 mb-1.5"
+            className="text-[var(--ink-1)] text-sm font-medium leading-snug line-clamp-2 [overflow-wrap:anywhere] mb-1.5"
             style={{ fontFamily: "var(--font-display-br, Georgia, serif)" }}
           >
             {metadata.title}
@@ -75,7 +75,7 @@ export default function VideoPreview({
             )}
           </div>
           {error && (
-            <p className="br-eyebrow text-[var(--play-700)] mt-2">{error}</p>
+            <p className="br-eyebrow text-[var(--play-text)] mt-2">{error}</p>
           )}
         </div>
       </div>
@@ -86,10 +86,10 @@ export default function VideoPreview({
           type="button"
           onClick={onProcess}
           disabled={isProcessing}
-          className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold bg-[var(--play)] hover:bg-[var(--play-700)] disabled:cursor-not-allowed text-white rounded-[6px] transition-colors"
+          className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold bg-[var(--play)] border border-transparent hover:bg-[var(--play-hover)] disabled:cursor-not-allowed text-[var(--on-play)] rounded-[6px] transition-colors"
         >
           {isProcessing ? (
-            <span className="bars-loader scale-75 origin-center [&_i]:bg-white"><i/><i/><i/><i/></span>
+            <span className="bars-loader scale-75 origin-center [&_i]:bg-[var(--on-play)]!"><i/><i/><i/><i/></span>
           ) : (
             <>
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
@@ -103,7 +103,7 @@ export default function VideoPreview({
         <button
           type="button"
           onClick={onRemove}
-          className="px-4 py-2.5 text-sm text-[var(--ink-2)] border border-[var(--rule)] hover:border-[var(--ink-2)] hover:text-[var(--ink-1)] rounded-[6px] transition-colors"
+          className="px-4 py-2.5 text-sm text-[var(--ink-2)] border border-[var(--rule)] hover:border-[var(--rule-strong)] hover:text-[var(--ink-1)] rounded-[6px] transition-colors"
         >
           {t("dashboard.submit.cancel")}
         </button>

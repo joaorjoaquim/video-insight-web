@@ -200,7 +200,7 @@ export default function WalletPage() {
   };
 
   const typeColor = (amount: number) =>
-    amount >= 0 ? "text-[var(--led-completed)]" : "text-[var(--play-700)]";
+    amount >= 0 ? "text-[var(--led-completed)]" : "text-[var(--play-text)]";
 
   return (
     <div className="min-h-screen bg-[var(--briefing-bg)]">
@@ -219,7 +219,7 @@ export default function WalletPage() {
             <div>
               <div className="br-eyebrow mb-4">{t("wallet.balance.current")}</div>
               <div
-                style={{ fontFamily: "var(--font-display-br, Georgia, serif)", fontSize: "clamp(4rem, 10vw, 6rem)", lineHeight: 1, letterSpacing: "-0.03em", fontStyle: "italic", color: "var(--play)" }}
+                style={{ fontFamily: "var(--font-display-br, Georgia, serif)", fontSize: "clamp(4rem, 10vw, 6rem)", lineHeight: 1, letterSpacing: "-0.03em", fontStyle: "italic", color: "var(--play-display)" }}
                 className="mb-3"
               >
                 {credits}
@@ -231,10 +231,10 @@ export default function WalletPage() {
               <button
                 type="button"
                 onClick={() => document.getElementById("earn-credits")?.scrollIntoView({ behavior: "smooth" })}
-                className="flex items-center gap-2 px-5 py-3 text-sm font-semibold bg-[var(--play)] hover:bg-[var(--play-700)] text-[var(--ink-1)] rounded-[6px] transition-colors"
+                className="flex items-center gap-2 px-5 py-3 text-sm font-semibold bg-[var(--play)] border border-transparent hover:bg-[var(--play-hover)] text-[var(--on-play)] rounded-[6px] transition-colors"
               >
                 {t("wallet.balance.buyBtn")}
-                <span className="inline-block w-0 h-0 border-t-[5px] border-t-transparent border-b-[5px] border-b-transparent border-l-[8px] border-l-white" />
+                <span className="inline-block w-0 h-0 border-t-[5px] border-t-transparent border-b-[5px] border-b-transparent border-l-[8px] border-l-[var(--on-play)]" />
               </button>
 
               {/* Stats */}
@@ -247,7 +247,7 @@ export default function WalletPage() {
                   <div key={i}>
                     <div className="br-eyebrow mb-2">{stat.label}</div>
                     <div
-                      style={{ fontFamily: "var(--font-display-br, Georgia, serif)", fontSize: "clamp(1.5rem, 4vw, 2.5rem)", lineHeight: 1, letterSpacing: "-0.02em", fontStyle: stat.accent ? "italic" : "normal", color: stat.accent ? "var(--play)" : "var(--ink-1)" }}
+                      style={{ fontFamily: "var(--font-display-br, Georgia, serif)", fontSize: "clamp(1.5rem, 4vw, 2.5rem)", lineHeight: 1, letterSpacing: "-0.02em", fontStyle: stat.accent ? "italic" : "normal", color: stat.accent ? "var(--play-display)" : "var(--ink-1)" }}
                     >
                       {stat.value}
                     </div>
@@ -358,7 +358,7 @@ export default function WalletPage() {
                     type="button"
                     onClick={() => fetchNextPage()}
                     disabled={isFetchingNextPage}
-                    className="px-5 py-2 text-sm border border-[var(--rule)] rounded-[6px] hover:border-[var(--ink-2)] transition-colors br-eyebrow"
+                    className="px-5 py-2 text-sm border border-[var(--rule)] rounded-[6px] hover:border-[var(--rule-strong)] transition-colors br-eyebrow"
                   >
                     {isFetchingNextPage ? (
                       <span className="flex items-center gap-2">
@@ -404,7 +404,7 @@ export default function WalletPage() {
                     <p className="text-[var(--ink-2)] text-xs leading-relaxed">{t("wallet.earn.weekly.sub")}</p>
                   </div>
                   <div className="mt-auto">
-                    <div style={{ fontFamily: "var(--font-display-br, Georgia, serif)", fontSize: "2rem", lineHeight: 1, letterSpacing: "-0.02em" }} className="text-[var(--play)]">100</div>
+                    <div style={{ fontFamily: "var(--font-display-br, Georgia, serif)", fontSize: "2rem", lineHeight: 1, letterSpacing: "-0.02em" }} className="text-[var(--play-display)]">100</div>
                     <div className="br-eyebrow mt-1">{t("wallet.earn.weekly.amount")}</div>
                   </div>
                   <div className="pt-3 border-t border-[var(--rule)]">
@@ -423,7 +423,7 @@ export default function WalletPage() {
                     onChange={(e) => { setPromoCode(e.target.value.toUpperCase()); setPromoResult(null); }}
                     onKeyDown={(e) => e.key === "Enter" && handleRedeemPromo()}
                     placeholder={t("wallet.earn.promo.placeholder")}
-                    className="border border-[var(--rule)] rounded-[6px] px-3 py-2 text-sm bg-white dark:bg-zinc-900 text-[var(--ink-1)] placeholder:text-[var(--ink-3)] focus:outline-none focus:border-[var(--bars)] transition-colors"
+                    className="border border-[var(--rule-strong)] rounded-[6px] px-3 py-2 text-sm bg-white dark:bg-zinc-900 text-[var(--ink-1)] placeholder:text-[var(--ink-3)] transition-colors"
                     style={{ fontFamily: "var(--font-mono-br, monospace)" }}
                   />
                   {promoResult && (
@@ -435,10 +435,10 @@ export default function WalletPage() {
                     type="button"
                     onClick={handleRedeemPromo}
                     disabled={!promoCode.trim() || redeemMutation.isPending}
-                    className="mt-auto flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold bg-[var(--play)] hover:bg-[var(--play-700)] disabled:cursor-not-allowed text-white rounded-[6px] transition-colors"
+                    className="mt-auto flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold bg-[var(--play)] border border-transparent hover:bg-[var(--play-hover)] disabled:cursor-not-allowed text-[var(--on-play)] rounded-[6px] transition-colors"
                   >
                     {redeemMutation.isPending ? (
-                      <span className="bars-loader scale-75 origin-center [&_i]:bg-white"><i/><i/><i/><i/></span>
+                      <span className="bars-loader scale-75 origin-center [&_i]:bg-[var(--on-play)]!"><i/><i/><i/><i/></span>
                     ) : t("wallet.earn.promo.button")}
                   </button>
                 </div>
@@ -495,7 +495,7 @@ export default function WalletPage() {
                               type="button"
                               onClick={() => handleClaimGithub(action, repo)}
                               disabled={claimingKey !== null}
-                              className="flex items-center justify-center gap-1.5 px-3 py-1 text-[10px] font-medium border border-[var(--rule)] rounded-[4px] hover:border-[var(--bars)] hover:text-[var(--bars)] disabled:cursor-not-allowed transition-colors"
+                              className="flex items-center justify-center gap-1.5 px-3 py-1 text-[10px] font-medium border border-[var(--rule)] rounded-[4px] hover:border-[var(--bars)] hover:text-[var(--bars-text)] disabled:cursor-not-allowed transition-colors"
                               style={{ fontFamily: "var(--font-mono-br, monospace)" }}
                             >
                               {claimingKey === `${action}-${repo}` ? (
@@ -537,8 +537,8 @@ export default function WalletPage() {
                     onClick={handleCopyReferral}
                     className={`mt-auto px-4 py-2 text-sm font-semibold rounded-[6px] transition-colors border ${
                       referralCopied
-                        ? "border-[var(--bars)] text-[var(--bars)]"
-                        : "border-[var(--rule)] text-[var(--ink-2)] hover:border-[var(--ink-2)] hover:text-[var(--ink-1)]"
+                        ? "border-[var(--bars)] text-[var(--bars-text)]"
+                        : "border-[var(--rule)] text-[var(--ink-2)] hover:border-[var(--rule-strong)] hover:text-[var(--ink-1)]"
                     }`}
                   >
                     {referralCopied ? t("wallet.earn.referral.copied") : t("wallet.earn.referral.copy")}

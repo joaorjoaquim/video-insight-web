@@ -30,7 +30,7 @@ export default function InsightsList({ chips, sections }: InsightsListProps) {
             className="br-eyebrow border px-2.5 py-1.5 rounded-[4px]"
             style={{
               borderColor: chip.variant === "destructive" ? "var(--play)" : "var(--rule)",
-              color: chip.variant === "destructive" ? "var(--play)" : "var(--ink-2)",
+              color: chip.variant === "destructive" ? "var(--play-text)" : "var(--ink-2)",
             }}
           >
             {chip.label}
@@ -45,7 +45,7 @@ export default function InsightsList({ chips, sections }: InsightsListProps) {
             {/* Section header with logo-bars */}
             <div className="flex items-center gap-3 mb-5">
               <span className="logo-bars"><i/><i/><i/></span>
-              <span className="br-eyebrow text-[var(--play-700)]">0{i + 1}</span>
+              <span className="br-eyebrow text-[var(--play-text)]">0{i + 1}</span>
               <h3
                 style={{ fontFamily: "var(--font-display-br, Georgia, serif)", fontSize: "1.3rem", letterSpacing: "-0.01em" }}
                 className="text-[var(--ink-1)]"
@@ -72,7 +72,7 @@ export default function InsightsList({ chips, sections }: InsightsListProps) {
                     {item.key && (
                       <span
                         className="br-eyebrow mr-2"
-                        style={{ color: "var(--play)", borderBottom: "1px solid var(--play)", paddingBottom: 1 }}
+                        style={{ color: "var(--play-text)", borderBottom: "1px solid var(--play)", paddingBottom: 1 }}
                       >
                         Key
                       </span>

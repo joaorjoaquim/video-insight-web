@@ -117,7 +117,11 @@
     scroll-behavior: smooth;
   }
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
+  }
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
   }
   body {
     @apply bg-background text-foreground;
@@ -131,22 +135,28 @@
 /* ─── Briefing Room design tokens ─── */
 :root {
   --play: #F2A240;
-  --play-700: #b87820;
+  --play-hover: #D98A1F;
+  --play-text: #9A4E00;
+  --play-display: #BF6D08;
   --on-play: #0F1117;
   --bars: #7E1DFD;
+  --bars-text: var(--bars);
   --briefing-bg: #F2F0EA;
   --ink-1: #0F1117;
   --ink-2: #3a3f4a;
-  --ink-3: #6b7280;
+  --ink-3: #5C6370;
   --rule: rgba(0, 0, 0, 0.10);
   --rule-soft: rgba(0, 0, 0, 0.05);
+  --rule-strong: #85827A;
+  --focus: var(--ink-1);
   --shadow-modal: 0 24px 64px rgba(0, 0, 0, 0.15);
 
-  --led-pending: #3B6EE0;
-  --led-downloaded: var(--bars);
+  --led-pending: #2F5BC7;
+  --led-downloaded: var(--bars-text);
   --led-transcribing: var(--play);
-  --led-completed: #16A34A;
-  --led-failed: #DC2626;
+  --led-transcribing-text: var(--play-text);
+  --led-completed: #137236;
+  --led-failed: #B42318;
 
   --d-instant: 100ms;
   --d-fast: 200ms;
@@ -164,9 +174,17 @@
   --briefing-bg: #0F1117;
   --ink-1: #F2F0EA;
   --ink-2: #b0b5be;
-  --ink-3: #6b7280;
+  --ink-3: #9097A3;
   --rule: rgba(255, 255, 255, 0.10);
   --rule-soft: rgba(255, 255, 255, 0.05);
+  --rule-strong: #6B7080;
+  --play-text: var(--play);
+  --play-display: var(--play);
+  --bars: #8B3DFF;
+  --bars-text: #B79CFF;
+  --led-pending: #8FAEF2;
+  --led-completed: #6CCB8F;
+  --led-failed: #F28B82;
 }
 
 /* ─── Logo bars section marker ─── */
@@ -219,7 +237,7 @@
 .led.failed::before     { background: var(--led-failed); }
 .led.pending    { color: var(--led-pending); }
 .led.downloaded { color: var(--led-downloaded); }
-.led.transcribing { color: var(--led-transcribing); }
+.led.transcribing { color: var(--led-transcribing-text); }
 .led.completed  { color: var(--led-completed); }
 .led.failed     { color: var(--led-failed); }
 
@@ -415,7 +433,7 @@
   transform: translateY(0);
   pointer-events: auto;
 }
-.scroll-top-btn:hover { background: var(--play); }
+.scroll-top-btn:hover { background: var(--play); color: var(--on-play); }
 
 /* ─── Tab content cross-fade ─── */
 [role="tabpanel"] {
@@ -435,9 +453,6 @@ button, a {
 input, select, textarea {
   transition: border-color var(--d-instant) var(--ease-out),
               box-shadow var(--d-instant) var(--ease-out);
-}
-input:focus, select:focus, textarea:focus {
-  box-shadow: 0 0 0 2px rgba(126, 29, 253, 0.18);
 }
 
 /* ─── Nav link active bar ─── */

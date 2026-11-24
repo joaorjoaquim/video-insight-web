@@ -51,8 +51,8 @@ export default function ActionButtons({
 
   const btnClass =
     "inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium tracking-[0.06em] uppercase border border-[var(--rule)] rounded-[4px] transition-colors";
-  const idleClass = "text-[var(--ink-2)] hover:text-[var(--ink-1)] hover:border-[var(--ink-2)]";
-  const activeClass = "text-[var(--bars)] border-[var(--bars)]";
+  const idleClass = "text-[var(--ink-2)] hover:text-[var(--ink-1)] hover:border-[var(--rule-strong)]";
+  const activeClass = "text-[var(--bars-text)] border-[var(--bars)]";
 
   return (
     <div className="flex gap-2">

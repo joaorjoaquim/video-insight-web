@@ -99,7 +99,7 @@ export default function DashboardPage() {
                 className="text-[var(--ink-1)] mb-3 max-w-[22ch]"
               >
                 {t("dashboard.submit.headline")}{" "}
-                <span className="ital-bar">{t("dashboard.submit.headlineAccent")}</span>{" "}
+                <span className="ital-bar mr-[0.08em]">{t("dashboard.submit.headlineAccent")}</span>{" "}
                 {t("dashboard.submit.headlineSuffix")}
               </h1>
               <p className="text-[var(--ink-2)] text-sm leading-relaxed mb-6">
@@ -116,17 +116,17 @@ export default function DashboardPage() {
                     {...register("url", { required: true })}
                     placeholder={t("dashboard.submit.placeholder")}
                     disabled={isSubmitting || isLoadingMetadata}
-                    className="flex-1 border border-[var(--rule)] rounded-[6px] px-3 py-2.5 text-sm bg-white dark:bg-zinc-900 text-[var(--ink-1)] placeholder:text-[var(--ink-3)] focus:outline-none focus:border-[var(--bars)] transition-colors"
+                    className="flex-1 border border-[var(--rule-strong)] rounded-[6px] px-3 py-2.5 text-sm bg-white dark:bg-zinc-900 text-[var(--ink-1)] placeholder:text-[var(--ink-3)] transition-colors"
                   />
                   {!videoMetadata && (
                     <button
                       type="button"
                       onClick={handleProcessVideo}
                       disabled={true}
-                      className="flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 text-sm font-semibold bg-[var(--play)] hover:bg-[var(--play-700)] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-[6px] transition-colors whitespace-nowrap"
+                      className="flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 text-sm font-semibold bg-[var(--play)] border border-transparent hover:bg-[var(--play-hover)] disabled:opacity-50 disabled:cursor-not-allowed text-[var(--on-play)] rounded-[6px] transition-colors whitespace-nowrap"
                     >
                       {t("dashboard.submit.button")}
-                      <span className="inline-block w-0 h-0 border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent border-l-[6px] border-l-white" />
+                      <span className="inline-block w-0 h-0 border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent border-l-[6px] border-l-[var(--on-play)]" />
                     </button>
                   )}
                 </div>
