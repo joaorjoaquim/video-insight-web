@@ -16,6 +16,42 @@ const PUBLIC_ROUTES = [
   // Add other public routes here
 ];
 
+const isDev = process.env.NODE_ENV === "development";
+
+function originOf(url: string | undefined): string {
+  try {
+    return new URL(url || "http://localhost:5000").origin;
+  } catch {
+    return "";
+  }
+}
+
+const directive = (name: string, ...sources: Array<string | false>) =>
+  [name, ...sources.filter(Boolean)].join(" ");
+
+// 'unsafe-eval' and the WebSocket sources exist only under `next dev` (tooling and HMR).
+// publish.x.com is listed because publish.twitter.com/oembed answers with a redirect to it.
+const CONTENT_SECURITY_POLICY =
+  [
+    "default-src 'self'",
+    directive("script-src", "'self'", "'unsafe-inline'", isDev && "'unsafe-eval'"),
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: https: https://img.youtube.com https://www.youtube.com https://i.vimeocdn.com",
+    "font-src 'self' data:",
+    directive(
+      "connect-src",
+      "'self'",
+      originOf(process.env.NEXT_PUBLIC_API_BASE_URL),
+      "https://www.youtube.com",
+      "https://vimeo.com",
+      "https://publish.twitter.com",
+      "https://publish.x.com",
+      isDev && "ws://localhost:*",
+      isDev && "ws://127.0.0.1:*"
+    ),
+    "frame-src 'self' https://www.youtube-nocookie.com",
+  ].join("; ") + ";";
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -81,10 +117,7 @@ export function middleware(request: NextRequest) {
   response.headers.set("X-Frame-Options", "DENY");
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("Referrer-Policy", "origin-when-cross-origin");
-  response.headers.set(
-    "Content-Security-Policy",
-    "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.youtube.com https://s.ytimg.com https://player.vimeo.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: https://img.youtube.com https://www.youtube.com https://i.vimeocdn.com; font-src 'self' data:; connect-src 'self' https: http://localhost:5000 https://api.summaryvideos.com https://www.youtube.com https://player.vimeo.com; frame-src 'self' https://www.youtube-nocookie.com https://player.vimeo.com;"
-  );
+  response.headers.set("Content-Security-Policy", CONTENT_SECURITY_POLICY);
 
   return response;
 }
